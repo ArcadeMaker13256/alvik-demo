@@ -103,9 +103,14 @@
         <p class="hint">Bluetooth: Chrome or Edge on Windows, or Chrome on Android. HTTPS required for online access. iPhone/iPad can chat but cannot directly control Alvik over Web Bluetooth. Keep the robot nearby.</p>
         <div class="row" style="margin-top:15px"><button id="stop" class="danger">■ STOP</button><button id="estop" class="danger">Emergency stop</button><button id="reset" type="button">Reset stop</button></div>
         <label style="display:flex;align-items:center;gap:8px;margin-top:12px"><input type="checkbox" id="allowMotion" style="width:auto"> Unlock wheel movement (OFF by default; direct commands execute immediately)</label>
+        <div style="margin-top:13px;padding:10px 12px;border:1px solid #766b52;border-radius:12px">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" id="collisionGuard" checked style="width:19px;height:19px;accent-color:#6fdcc9"><strong id="collisionGuardLabel">Collision prevention ON</strong></label>
+          <div class="status" id="collisionGuardStatus" aria-live="polite">ON by default. Disable only for supervised movement on a clear, enclosed floor.</div>
+          <p class="hint">OFF ignores front distance readings for direct movement, even if an obstacle is present. Explore, Tag, Color Hunt and Return to start are disabled while OFF. Emergency STOP, 10-foot limit, and Bluetooth watchdog remain active. Reconnect/reset automatically restores ON.</p>
+        </div>
         <div class="row" style="margin-top:12px"><button class="primary" id="startPlay" type="button">Explore</button><button type="button" id="startTag">Play tag</button><button type="button" id="startColor">Color hunt</button><button type="button" id="restPet">Rest</button></div>
         <div class="status" id="petModeState">Pip is resting. Autonomous goals are OFF.</div>
-        <p class="hint">Goal modes: Explore clears obstacles; Tag attempts to follow an object in the center beam; Color Hunt records changing floor-color labels. No camera/person detection. A visible tab, Bluetooth, and movement unlock are required. Keep on the floor away from stairs and ledges.</p>
+        <p class="hint">Goal modes require collision prevention ON. Explore clears obstacles; Tag attempts to follow an object in the center beam; Color Hunt records changing floor-color labels. No camera/person detection. A visible tab, Bluetooth, and movement unlock are required. Keep on the floor away from stairs and ledges.</p>
         <div class="row" style="margin-top:10px"><button type="button" id="forwardTest" class="slim">Test tiny forward step</button><button type="button" id="leftTest" class="slim">Test tiny left turn</button></div>
         <div class="status" id="motionState">Movement LOCKED</div>
         <div class="status" id="robotStatus">Not connected.</div>
@@ -113,7 +118,7 @@
         <p class="hint">If Pip stops playing but the heading still says Connected, that is a safety heartbeat or hidden-tab pause, not a Bluetooth disconnection. A real GATT disconnect will show a reconnect attempt here.</p>
       </div></section>
       <section class="panel"><div class="panelhead">Precise navigation <span class="sub">Odometry, not GPS</span></div><div class="content">
-        <div class="row"><label style="flex:1">Distance (cm)<input id="exactCm" type="number" min="-15" max="50" step="0.1" value="30.48"></label><button id="exactForward">Move exact</button><label style="flex:1">Turn (degrees)<input id="exactDeg" type="number" min="-180" max="180" step="1" value="90"></label><button id="exactTurn">Turn exact</button></div>
+        <div class="row"><label style="flex:1">Distance (cm)<input id="exactCm" type="number" min="-15" max="304.8" step="0.1" value="30.48"></label><button id="exactForward">Move exact</button><label style="flex:1">Turn (degrees)<input id="exactDeg" type="number" min="-180" max="180" step="1" value="90"></label><button id="exactTurn">Turn exact</button></div>
         <div class="row"><button id="markHome" type="button">Mark start</button><button id="goHome" type="button">Return to start</button><button id="updatePose" type="button">Update position</button></div>
         <div class="note">Position estimate from wheel odometry: <strong id="poseText">Unknown</strong><div id="tripText">Trip distance: —</div>Mark start only while stopped. Return follows a short direct route (max 120 cm), not an obstacle map; it will stop when blocked.</div>
         <div id="planBox" class="note" style="margin-top:10px;display:none"><strong>Executing a movement command</strong><div id="planText"></div><p class="hint">Press STOP or Emergency stop any time. Commands run immediately while wheel movement is unlocked.</p></div>
@@ -123,6 +128,7 @@
       <section class="panel"><div class="panelhead">Hardware capabilities &amp; sensor tuning</div><div class="content">
         <div class="note">Battery: <strong id="batteryStatus">—</strong> · Line (L/C/R): <strong id="lineStatus">—</strong> · Orientation: <strong id="imuStatus">—</strong> · Tag/color score: <strong id="gameScore">0</strong><div>Wheel angles: <strong id="wheelsStatus">—</strong> · Touch buttons: <strong id="touchStatus">—</strong> · Upper/lower ToF: <strong id="extraTof">—</strong></div></div>
         <div class="row" style="margin-top:9px"><button id="lightsOn">Illuminator ON</button><button id="lightsOff">Illuminator OFF</button></div>
+        <p class="hint">Dark rooms alone should not prevent the front ToF infrared sensor from measuring distance. If it reports missing readings, first check the sensor lens, target surface, and five-zone display. The downward line/color sensors are separate.</p>
         <p class="hint">Distance calibration: put a flat target at a measured distance, compare each displayed zone, and set the correction (actual − observed, max ±10 cm). Corrections are saved in this browser and uploaded on connection; restart/other-device calibration requires this browser.</p>
         <div class="row"><label>Zone<select id="calZone"><option value="0">Left</option><option value="1">Center-left</option><option value="2" selected>Center</option><option value="3">Center-right</option><option value="4">Right</option></select></label><label>Correction cm<input id="calOffset" type="number" value="0" step="1" min="-10" max="10"></label><button id="applyCal">Save calibration</button></div>
         <div class="status" id="calStatus">Unknown/no reading = blocked. Filtering is on the robot, not an excuse to drive blind.</div>
@@ -135,7 +141,7 @@
       </div></section>
     </aside>
   </main>
-  <p class="hint" style="margin-top:17px">Safety: front obstacle detection is still active, and no edge detection is provided. Do not operate near stairs, ledges, small pets, or on elevated surfaces.</p>
+  <p class="hint" style="margin-top:17px">Safety: collision prevention is ON by default but can be disabled for supervised direct motion; no edge detection is provided. Do not operate near stairs, ledges, small pets, or on elevated surfaces.</p>
 </div>
 <script src="pip_commands.js"></script><script src="pip_games.js"></script>
 <script src="pip_memory.js"></script>
@@ -153,6 +159,7 @@ const RETRY_DELAYS_MS=[1200,2500,5000,9000];
 let history = [], pending = new Map(), sendChain = Promise.resolve(), safetyEpoch = 0;
 let petAutoActive=false, lastPetVoiceAt=0;
 let lastPose=null, tripCm=null, motionWait=null, runningPlan=false;
+let collisionGuardConfirmed=true, guardPending=null;
 let distances = [-1,-1,-1,-1,-1], color = 'unknown', sensedAt = 0, estopLatched = false;
 const moods = {happy:['🙂','H'],excited:['⚡','E'],curious:['🔎','C'],shy:['💤','S'],neutral:['🤖','N'],warning:['⚠️','W']};
 const AI_TIMEOUT_MS = 40000;
@@ -335,13 +342,20 @@ function messageFromRobot(event) {
   } else if(p[0]==='U'){$('imuStatus').textContent='roll '+p[1]+'°, pitch '+p[2]+'°, yaw '+p[3]+'°';}
   else if(p[0]==='W'){$('wheelsStatus').textContent=p[1]+'° / '+p[2]+'°'}
   else if(p[0]==='T'){$('touchStatus').textContent=Number(p[1])?'Pressed mask '+p[1]:'none'}
-
+  else if(p[0]==='O' && (p[1]==='0'||p[1]==='1')){
+    collisionGuardConfirmed=p[1]==='1';
+    updateCollisionGuardUI();
+    if(guardPending){const q=guardPending;guardPending=null;
+      if(q.want===collisionGuardConfirmed)q.resolve();
+      else q.reject(Error('Robot reported a different collision prevention mode.'));
+    }
+  }
   else if (p[0]==='A') {
     const status=p[1]||'';setStatus('robotStatus','Robot: '+status);
     if(motionWait){
       if(status==='done' && motionWait.expect==='done') {const w=motionWait;motionWait=null;w.resolve(status)}
       else if(status==='home' && motionWait.expect==='home'){const w=motionWait;motionWait=null;w.resolve(status)}
-      else if(['blocked','nosensor','badcmd','error','timeout','linklost','range','notready','toofar','homefailed','estop'].includes(status)){
+      else if(['blocked','nosensor','badcmd','error','timeout','linklost','range','notready','toofar','homefailed','estop','guardoff'].includes(status)){
         const w=motionWait;motionWait=null;w.reject(Error('Robot: '+status));
       }
     }
@@ -376,12 +390,47 @@ function petSound(line, mood) {
 function updatePetModeState(){
   setStatus('petModeState',petAutoActive?'Autonomous goal running: supervised obstacle-aware motions.':'Pip is resting. Goals are OFF.');
 }
+function updateCollisionGuardUI(){
+  $('collisionGuard').checked=collisionGuardConfirmed;
+  $('collisionGuardLabel').textContent=collisionGuardConfirmed?'Collision prevention ON':'Collision prevention OFF — manual control only';
+  setStatus('collisionGuardStatus',collisionGuardConfirmed
+    ? 'ON: front ToF obstacle readings can stop forward motion.'
+    : 'OFF: obstacle detection bypassed for direct motor commands. Risk of collision. Stay beside the robot and keep STOP available.');
+  $('collisionGuardStatus').style.color=collisionGuardConfirmed?'':'#ff9e9e';
+}
+function waitGuardStatus(desired,limit=4000){
+  if(guardPending)throw Error('Collision guard change already pending.');
+  return new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>{if(guardPending===item){guardPending=null;reject(Error('Robot did not confirm the collision-prevention setting. Check the new firmware.'));}},limit);
+    const item={want:desired,resolve:()=>{clearTimeout(timer);resolve()},reject:e=>{clearTimeout(timer);reject(e)}};
+    guardPending=item;
+  });
+}
+async function setCollisionGuard(desired){
+  if(!rxChar)throw Error('Connect Alvik first.');
+  if(runningPlan || petAutoActive)throw Error('Stop movement and autonomous games before changing collision prevention.');
+  if(!desired){
+    if(!$('allowMotion').checked)throw Error('Unlock wheel movement before disabling collision prevention.');
+    if(!confirm('WARNING: Disable obstacle protection? Pip may drive into walls, people, furniture or pets. Only use on a clear, enclosed floor with direct supervision. STOP and movement limits remain active.'))return;
+  }
+  const ack=waitGuardStatus(desired);
+  try{await transmit(desired?'O,1':'O,0');await ack;}
+  catch(err){if(guardPending){const w=guardPending;guardPending=null;w.reject(err);}throw err;}
+}
 function updateMotionState(){ $('motionState').textContent=$('allowMotion').checked?'Movement UNLOCKED • supervised only':'Movement LOCKED'; }
+$('collisionGuard').onchange=()=>{
+  const desired=$('collisionGuard').checked;
+  // Do not visually claim that safety was disabled until the robot confirms it.
+  $('collisionGuard').checked=collisionGuardConfirmed;
+  setCollisionGuard(desired).catch(err=>{updateCollisionGuardUI();bubble('Collision prevention unchanged: '+err.message,'system');});
+};
 $('allowMotion').onchange=()=>{updateMotionState();if(!$('allowMotion').checked){petAutoActive=false;updatePetModeState();if(rxChar)sendStop(false)}};
 function resetBluetoothState(message) {
   // This disarms movement even if the browser reconnects later.
   safetyEpoch++;petAutoActive=false;updatePetModeState();
   if(motionWait){const w=motionWait;motionWait=null;w.reject(Error('Bluetooth disconnected'))}
+  if(guardPending){const w=guardPending;guardPending=null;w.reject(Error('Bluetooth disconnected'))}
+  collisionGuardConfirmed=true;updateCollisionGuardUI();
   hidePlan();runningPlan=false;
   $('allowMotion').checked=false;updateMotionState();
   rxChar=null;txChar=null;sendChain=Promise.resolve();
@@ -583,7 +632,7 @@ function assertSafeMove(){
 }
 async function executePlan(steps, source='direct request') {
   const valid=window.PipCommands.validate(steps);
-  if(!valid)throw Error('Movement refused: each forward step must be 50 cm or less, each backward step 15 cm or less, each turn 180° or less; maximum 5 steps and 100 cm total travel.');
+  if(!valid)throw Error('Movement refused: forward steps are limited to 10 feet (304.8 cm), backward steps to 15 cm, and turns to 180°; maximum 5 steps and 10 feet total travel per command.');
   if(runningPlan)throw Error('Pip is already moving. Say STOP before issuing another movement.');
   assertSafeMove();
   runningPlan=true;const epoch=safetyEpoch;
@@ -604,7 +653,10 @@ async function executePlan(steps, source='direct request') {
       if(epoch!==safetyEpoch || !rxChar || !$('allowMotion').checked || document.hidden)
         throw Error('Canceled before movement');
       setStatus('sequenceStatus','Executing step '+(i+1)+' of '+valid.length+' — '+describeMotionPlan([p]));
-      await sendWithAck(p.kind==='move'?'V,'+p.cm:'T,'+p.deg,'done',19500);
+      // A ten-foot move can take considerably longer than a 50-cm move.
+      // Keep the UI timeout longer than the firmware watchdog; do NOT disable STOP.
+      const ackMs=p.kind==='move'?Math.min(105000,Math.max(19500,Math.ceil(Math.abs(p.cm)*320+8000))):19500;
+      await sendWithAck(p.kind==='move'?'V,'+p.cm:'T,'+p.deg,'done',ackMs);
     }
     if(epoch!==safetyEpoch)throw Error('Movement canceled');
     setStatus('sequenceStatus','Completed '+valid.length+' step(s) according to Alvik acknowledgements.');
@@ -625,7 +677,7 @@ async function markHome(){
   }catch(err){bubble(err.message,'system')}
 }
 async function goHome(){
-  try{assertSafeMove();if(runningPlan)throw Error('Wait for the current plan.');
+  try{if(!collisionGuardConfirmed)throw Error('Re-enable collision prevention before Return to start.');assertSafeMove();if(runningPlan)throw Error('Wait for the current plan.');
     if(!lastPose)throw Error('Read position first.');
     const radius=Math.hypot(lastPose.xCm,lastPose.yCm);
     if(radius>120)throw Error('Too far from start (maximum 120 cm).');
@@ -642,9 +694,10 @@ async function handleAdvanced(command){
   if(command.type==='mark_home'){await markHome();return}
   if(command.type==='go_home'){await goHome();return}
   if(command.type==='plan'){await executePlan(command.steps,'Your command');return}
-  if(command.type==='invalid_motion'){bubble('Move request outside safe limits. Use moves up to 50 cm forward, 15 cm backward, or turns up to 180° per step.','bot');return}
+  if(command.type==='invalid_motion'){bubble('Move request outside safe limits. Forward commands can be up to 10 feet (304.8 cm), reverse up to 15 cm, and turns up to 180°.','bot');return}
   if(command.type==='goal'){
     if(command.goal==='rest'){await setPetMode('rest');return}
+    if(!collisionGuardConfirmed)throw Error('Turn collision prevention ON before running autonomous goals.');
     assertSafeMove();
     await transmit(({tag:'P,T',color:'P,C',explore:'P,1'})[command.goal]);
     petAutoActive=true;updatePetModeState();setStatus('petModeState','Goal running: '+command.goal);
@@ -728,7 +781,7 @@ $('disconnect').onclick=disconnectRobotManually;
 $('refresh').onclick=async()=>{try{await transmit('Q')}catch(err){bubble(err.message,'system')}};
 $('stop').onclick=()=>sendStop();
 $('estop').onclick=()=>sendStop(true);
-$('startPlay').onclick=()=>setPetMode('play');
+$('startPlay').onclick=()=>{if(!collisionGuardConfirmed){bubble('Turn collision prevention ON before Explore mode.','system');return;}setPetMode('play')};
 $('restPet').onclick=()=>setPetMode('rest');
 $('forwardTest').onclick=()=>chat('go forward');
 $('leftTest').onclick=()=>chat('turn left');
@@ -780,7 +833,7 @@ if(SpeechRecognition){
 }
 window.addEventListener('beforeunload',()=>{if(micController)micController.disable();userRequestedDisconnect=true;cancelRetry();if(device&&device.gatt.connected){try{device.gatt.disconnect()}catch(e){}}});
 bubble('Pip online. Connect and unlock wheel movement to execute commands immediately. Switch Mic ON for hands-free listening, say “Pip, stop” at any time, or press the emergency stop button.');
-updateMotionState();updatePetModeState();
+updateMotionState();updatePetModeState();updateCollisionGuardUI();
 refreshSensors();
 </script>
 </body>

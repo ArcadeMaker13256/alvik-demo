@@ -44,7 +44,7 @@
      if(!p||!['move','turn'].includes(p.kind))return null;
      if(p.kind==='move'){
        const cm=Number(p.cm);
-       if(!Number.isFinite(cm)||cm===0||cm>50||cm< -15)return null;
+       if(!Number.isFinite(cm)||cm===0||cm>304.8||cm< -15)return null;
        traveled+=Math.abs(cm);
        out.push({kind:'move',cm:Math.round(cm*10)/10});
      } else {
@@ -54,7 +54,7 @@
        out.push({kind:'turn',deg:Math.round(deg*10)/10});
      }
    }
-   if(traveled>100||rotated>360)return null;
+   if(traveled>304.8||rotated>360)return null;
    return out;
  }
  function parse(input){
