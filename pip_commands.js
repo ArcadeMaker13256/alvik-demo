@@ -1,7 +1,7 @@
-/* Pip 4.0 deterministic robot commands. CommonJS for offline tests. */
+/* Pip 4.1 deterministic robot commands. CommonJS for offline tests. */
 (function(root) {
  'use strict';
- function clean(s) {return String(s||'').toLowerCase().replace(/[!?.,]/g,' ').replace(/\s+/g,' ').trim().replace(/^(hey pip |pip |please |can you |could you |would you )+/, '').replace(/ please$/, '');}
+ function clean(s) {return String(s||'').toLowerCase().replace(/[!?,]/g,' ').replace(/\.(?![0-9])/g,' ').replace(/\s+/g,' ').trim().replace(/^(hey pip |pip |please |can you |could you |would you )+/, '').replace(/ please$/, '');}
  function numberWithUnits(raw, defaultUnit) {
    const m=/^(\d+(?:\.\d+)?|half|one|two|three)\s*(millimeters?|mm|centimeters?|cm|meters?|m|inches?|inch|in|feet|foot|ft|degrees?|deg|°)?$/.exec(raw.trim());
    if(!m)return null;
@@ -20,6 +20,14 @@
      if(!n||n.kind!=='move')return null;
      return {kind:'move',cm:Math.round(n.value*10)/10*(m[1].startsWith('b')||m[1]==='reverse'?-1:1)};
    }
+   // When a direction is omitted from an explicit distance command, forward is the default.
+   // E.g. "move 1 foot" or "go 30 cm".
+   m=/^(?:move|go|drive|roll|walk|travel|step)\s+(?:ahead\s+|forward\s+)?(.+)$/.exec(s);
+   if(m){
+     const n=numberWithUnits(m[1],'cm');
+     if(n && n.kind==='move')return {kind:'move',cm:Math.round(n.value*10)/10};
+   }
+   if(/^(?:turn|rotate|spin)\s+around$/.test(s))return {kind:'turn',deg:180};
    m=/^(?:turn|rotate|spin)\s+(left|right)\s+(\d+(?:\.\d+)?)(?:\s*(?:degrees?|deg|°))?$/.exec(s);
    if(m)return {kind:'turn',deg:Number(m[2])*(m[1]==='left'?1:-1)};
    m=/^(?:turn|rotate|spin)\s+(\d+(?:\.\d+)?)(?:\s*(?:degrees?|deg|°))?\s+(left|right)$/.exec(s);

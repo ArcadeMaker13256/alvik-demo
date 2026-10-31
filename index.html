@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pip 4.0 — Alvik Robotics Lab</title>
+  <title>Pip 4.2 — Hands-Free Robot Assistant</title>
   <style>
     :root {color-scheme:dark;--bg:#0d111b;--panel:#151c2c;--line:#2b3850;--text:#ecf2ff;--muted:#9baac2;--accent:#6fdcc9;--violet:#b9a5ff;--danger:#ff7382}
     * {box-sizing:border-box} body{margin:0;font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;background:radial-gradient(ellipse at 16% 5%,#1a2844 0%,var(--bg) 46%);color:var(--text)}
@@ -46,7 +46,7 @@
 <body>
 <div class="container">
   <header>
-    <div class="brand"><div class="robot-icon">🤖</div><div><h1>Alvik AI</h1><div class="sub">Pip 4.0 · capable robot assistant · powered by Gemini</div></div></div>
+    <div class="brand"><div class="robot-icon">🤖</div><div><h1>Alvik AI</h1><div class="sub">Pip 4.2 · hands-free robot assistant · powered by Gemini</div></div></div>
     <div id="headline" class="pill">● Robot disconnected</div>
   </header>
   <main class="layout">
@@ -61,11 +61,14 @@
         <button type="button" data-ask="Turn right 45 degrees">Rotate</button>
       </div>
       <div class="chat-controls">
-        <button id="mic" type="button" title="Speak a message">🎙️</button>
+        <button id="mic" type="button" title="Turn continuous microphone on or off" aria-pressed="false">🎙️ Mic ON</button>
         <div class="grow"><textarea id="prompt" aria-label="Message to Pip" placeholder="Ask Pip a question, or say: turn left 90 degrees and move forward 1 foot"></textarea><div class="hint">Press Enter to send, Shift+Enter for a new line</div></div>
         <button class="primary" id="send" type="button">Send</button>
       </div>
       <div class="content" style="padding-top:0">
+        <div class="status" id="micStatus" role="status" aria-live="polite">🔇 Microphone OFF — click Mic ON to start hands-free listening.</div>
+        <label style="display:flex;align-items:center;gap:7px;margin-top:8px"><input type="checkbox" id="wakeWord" checked style="width:auto"> Require “Pip” before spoken commands (recommended, particularly for motion)</label>
+        <p class="hint">Hands-free mic stays enabled until switched OFF while this tab remains open. Say “Pip, move forward 1 foot”, “Pip, stop”, or “Pip, turn off microphone”. It pauses while Pip speaks and when the tab is hidden. Voice recognition may use an online service.</p>
         <label style="display:flex;align-items:center;gap:7px"><input type="checkbox" id="speech" checked style="width:auto"> Pip talks out loud</label>
         <label style="display:flex;align-items:center;gap:7px;margin-top:8px"><input type="checkbox" id="chirps" style="width:auto"> Play electronic sound effects</label>
         <div class="voice-settings">
@@ -99,7 +102,7 @@
         <div class="row"><button id="connect" class="primary">Connect Alvik</button><button id="disconnect" type="button">Disconnect</button><button id="refresh" type="button">Read sensors</button></div>
         <p class="hint">Bluetooth: Chrome or Edge on Windows, or Chrome on Android. HTTPS required for online access. iPhone/iPad can chat but cannot directly control Alvik over Web Bluetooth. Keep the robot nearby.</p>
         <div class="row" style="margin-top:15px"><button id="stop" class="danger">■ STOP</button><button id="estop" class="danger">Emergency stop</button><button id="reset" type="button">Reset stop</button></div>
-        <label style="display:flex;align-items:center;gap:8px;margin-top:12px"><input type="checkbox" id="allowMotion" style="width:auto"> Unlock motor movement (OFF by default)</label>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:12px"><input type="checkbox" id="allowMotion" style="width:auto"> Unlock wheel movement (OFF by default; direct commands execute immediately)</label>
         <div class="row" style="margin-top:12px"><button class="primary" id="startPlay" type="button">Explore</button><button type="button" id="startTag">Play tag</button><button type="button" id="startColor">Color hunt</button><button type="button" id="restPet">Rest</button></div>
         <div class="status" id="petModeState">Pip is resting. Autonomous goals are OFF.</div>
         <p class="hint">Goal modes: Explore clears obstacles; Tag attempts to follow an object in the center beam; Color Hunt records changing floor-color labels. No camera/person detection. A visible tab, Bluetooth, and movement unlock are required. Keep on the floor away from stairs and ledges.</p>
@@ -113,8 +116,8 @@
         <div class="row"><label style="flex:1">Distance (cm)<input id="exactCm" type="number" min="-15" max="50" step="0.1" value="30.48"></label><button id="exactForward">Move exact</button><label style="flex:1">Turn (degrees)<input id="exactDeg" type="number" min="-180" max="180" step="1" value="90"></label><button id="exactTurn">Turn exact</button></div>
         <div class="row"><button id="markHome" type="button">Mark start</button><button id="goHome" type="button">Return to start</button><button id="updatePose" type="button">Update position</button></div>
         <div class="note">Position estimate from wheel odometry: <strong id="poseText">Unknown</strong><div id="tripText">Trip distance: —</div>Mark start only while stopped. Return follows a short direct route (max 120 cm), not an obstacle map; it will stop when blocked.</div>
-        <div id="planBox" class="note" style="margin-top:10px;display:none"><strong>Review the proposed motor plan</strong><div id="planText"></div><div class="row"><button id="approvePlan" class="primary" type="button">Approve &amp; execute</button><button id="cancelPlan" type="button">Cancel</button></div></div>
-        <div class="status" id="sequenceStatus">No motion plan pending.</div>
+        <div id="planBox" class="note" style="margin-top:10px;display:none"><strong>Executing a movement command</strong><div id="planText"></div><p class="hint">Press STOP or Emergency stop any time. Commands run immediately while wheel movement is unlocked.</p></div>
+        <div class="status" id="sequenceStatus">Ready. Clear movement requests run immediately when unlocked.</div>
       </div></section>
       <section class="panel"><div class="panelhead">Interactive games</div><div class="content"><div class="row"><button id="gameRps">Rock · Paper · Scissors</button><button id="gameNumber">Guess the number</button><button id="gameMemory">Memory challenge</button></div><p class="hint">Chat to play. Games use the web app, so they work without Bluetooth or Gemini.</p></div></section>
       <section class="panel"><div class="panelhead">Hardware capabilities &amp; sensor tuning</div><div class="content">
@@ -136,19 +139,20 @@
 </div>
 <script src="pip_commands.js"></script><script src="pip_games.js"></script>
 <script src="pip_memory.js"></script>
+<script src="pip_mic.js"></script>
 <script>
 'use strict';
 const SERVICE_UUID = 'a7e12e00-6c14-4bcb-b2ae-8ef7ef5de800';
 const RX_UUID = 'a7e12e01-6c14-4bcb-b2ae-8ef7ef5de800';
 const TX_UUID = 'a7e12e02-6c14-4bcb-b2ae-8ef7ef5de800';
 const $ = id => document.getElementById(id);
-let device = null, rxChar = null, txChar = null, busy = false, micRecognition = null;
+let device = null, rxChar = null, txChar = null, busy = false, micController = null;
 let userRequestedDisconnect=false, reconnectTimer=null, reconnectAttempts=0, connectBusy=false, bleGeneration=0;
 let lastBLEMessageAt=0, connectedAt=0;
 const RETRY_DELAYS_MS=[1200,2500,5000,9000];
 let history = [], pending = new Map(), sendChain = Promise.resolve(), safetyEpoch = 0;
 let petAutoActive=false, lastPetVoiceAt=0;
-let lastPose=null, tripCm=null, pendingPlan=null, motionWait=null, runningPlan=false;
+let lastPose=null, tripCm=null, motionWait=null, runningPlan=false;
 let distances = [-1,-1,-1,-1,-1], color = 'unknown', sensedAt = 0, estopLatched = false;
 const moods = {happy:['🙂','H'],excited:['⚡','E'],curious:['🔎','C'],shy:['💤','S'],neutral:['🤖','N'],warning:['⚠️','W']};
 const AI_TIMEOUT_MS = 40000;
@@ -223,6 +227,7 @@ let voiceSerial=0;
 function say(text,mood=chosenMood){
   if(!$('speech').checked||!('speechSynthesis' in window))return;
   const serial=++voiceSerial;
+  if(micController)micController.pauseForSpeech();
   speechSynthesis.cancel();
   const delay=chirp(mood);
   const utterance=new SpeechSynthesisUtterance(String(text).slice(0,750));
@@ -235,9 +240,22 @@ function say(text,mood=chosenMood){
   const selected=voiceList.find(v=>v.voiceURI===$('voiceChoice').value);
   utterance.voice=selected||voiceList.find(v=>/Zira|Aria|Samantha|Google US English/i.test(v.name))||voiceList[0]||null;
   utterance.onstart=()=>{if(serial===voiceSerial)setStatus('voiceStatus','🔊 Pip is talking');};
-  utterance.onend=()=>{if(serial===voiceSerial)setStatus('voiceStatus','Voice ready');};
-  utterance.onerror=e=>{if(serial===voiceSerial)setStatus('voiceStatus','Voice could not play: '+e.error);};
-  setTimeout(()=>{if(serial===voiceSerial)speechSynthesis.speak(utterance)},delay);
+  let speechWatchdog=null;
+  const endSpeech=()=>{
+    if(serial!==voiceSerial)return;
+    if(speechWatchdog!==null){clearTimeout(speechWatchdog);speechWatchdog=null;}
+    if(micController)micController.resumeAfterSpeech();
+  };
+  utterance.onend=()=>{if(serial===voiceSerial){setStatus('voiceStatus','Voice ready');endSpeech();}};
+  utterance.onerror=e=>{if(serial===voiceSerial){setStatus('voiceStatus','Voice could not play: '+e.error);endSpeech();}};
+  setTimeout(()=>{
+    if(serial!==voiceSerial)return;
+    try{
+      speechSynthesis.speak(utterance);
+      // Some speech engines omit onend. Release the microphone even in that case.
+      speechWatchdog=setTimeout(()=>{if(serial===voiceSerial){setStatus('voiceStatus','Voice timeout — mic resumed');endSpeech();}},65000);
+    }catch(e){setStatus('voiceStatus','Voice failed: '+e.message);endSpeech();}
+  },delay);
 }
 $('previewVoice').onclick=()=>say('Hello. I am Pip, your robot assistant. Ready for our next mission.', 'happy');
 $('previewChirp').onclick=()=>chirp('excited');
@@ -364,7 +382,7 @@ function resetBluetoothState(message) {
   // This disarms movement even if the browser reconnects later.
   safetyEpoch++;petAutoActive=false;updatePetModeState();
   if(motionWait){const w=motionWait;motionWait=null;w.reject(Error('Bluetooth disconnected'))}
-  pendingPlan=null;hidePlan();runningPlan=false;
+  hidePlan();runningPlan=false;
   $('allowMotion').checked=false;updateMotionState();
   rxChar=null;txChar=null;sendChain=Promise.resolve();
   distances=[-1,-1,-1,-1,-1];sensedAt=0;
@@ -463,7 +481,7 @@ async function transmit(command) {
 }
 async function sendStop(emergency=false) {
   safetyEpoch++;petAutoActive=false;updatePetModeState();
-  pendingPlan=null;hidePlan();
+  hidePlan();
   if(motionWait){const w=motionWait;motionWait=null;w.reject(Error('Movement canceled by STOP'))}
   if ('speechSynthesis' in window){voiceSerial++;speechSynthesis.cancel()}
   if (!rxChar) {bubble('Connect to Alvik to send a stop command.','system');return}
@@ -533,13 +551,16 @@ function hidePlan(){
   $('planBox').style.display='none';
   $('planText').textContent='';
 }
-function proposePlan(steps, source='typed request'){
-  const valid=window.PipCommands.validate(steps);
-  if(!valid){bubble('I cannot perform that move: keep each forward step <= 50 cm, backward <= 15 cm, turn <= 180°, and plan <= 5 steps/100 cm.','system');return}
-  pendingPlan={steps:valid,epoch:safetyEpoch};
-  $('planBox').style.display='block';
-  $('planText').textContent=source+': '+valid.map(p=>p.kind==='move' ? 'move '+p.cm+' cm' : 'turn '+p.deg+'° (positive = left)').join(' → ');
-  setStatus('sequenceStatus','Plan waiting for your approval. No motors have moved.');
+function describeMotionPlan(steps) {
+  return steps.map(p => p.kind==='move' ? 'move '+p.cm+' cm' : 'turn '+p.deg+'° (positive = left)').join(' → ');
+}
+function isExplicitMotionRequest(text) {
+  const t=String(text||'').toLowerCase().replace(/[!?.,]/g,' ').replace(/\s+/g,' ').trim()
+    .replace(/^(?:(?:hey )?pip |please |can you |could you |would you |i want you to |i need you to )+/,'');
+  // Prevent a Gemini-generated plan from executing on a question, example, negation,
+  // hypothetical statement, or a message without a movement instruction.
+  if(/\b(?:don't|dont|do not|not|never|without|should|what if|explain|how to|why|imagine|pretend|example|hypothetical|instead of|rather than)\b/.test(t))return false;
+  return /^(?:move|go|drive|roll|walk|travel|navigate|head|advance|reverse|back up)\b/.test(t) || /^(?:turn|rotate|spin)\s+(?:left|right|around|[0-9]+(?:\.[0-9]+)?(?:\s*(?:degrees?|deg|°))?)\b/.test(t);
 }
 function waitForStatus(expect='done',limit=18000){
   if(motionWait)throw Error('Another movement is already in progress.');
@@ -560,25 +581,42 @@ function assertSafeMove(){
   if(estopLatched)throw Error('Emergency stop is active.');
   if(document.hidden)throw Error('Keep this browser tab visible.');
 }
-async function executePlan(){
-  if(!pendingPlan || runningPlan)return;
-  const plan=pendingPlan;pendingPlan=null;hidePlan();
-  try{assertSafeMove()}catch(err){bubble(err.message,'system');return}
+async function executePlan(steps, source='direct request') {
+  const valid=window.PipCommands.validate(steps);
+  if(!valid)throw Error('Movement refused: each forward step must be 50 cm or less, each backward step 15 cm or less, each turn 180° or less; maximum 5 steps and 100 cm total travel.');
+  if(runningPlan)throw Error('Pip is already moving. Say STOP before issuing another movement.');
+  assertSafeMove();
   runningPlan=true;const epoch=safetyEpoch;
+  $('planBox').style.display='block';
+  $('planText').textContent=source+': '+describeMotionPlan(valid);
+  setStatus('sequenceStatus','Executing now — no approval required.');
   try{
+    // Disarm autonomous goals before an explicit movement sequence.
     await transmit('P,0');
-    for(let i=0;i<plan.steps.length;i++){
-      if(epoch!==safetyEpoch || !rxChar || !document.hasFocus() || document.hidden)throw Error('Canceled or page lost focus');
-      const p=plan.steps[i];
-      if(p.kind==='move' && p.cm<0 && !confirm('Alvik has no rear obstacle sensor. Is the area behind the robot clear for '+Math.abs(p.cm)+' cm?'))throw Error('Backward movement canceled');
-      setStatus('sequenceStatus','Executing step '+(i+1)+' of '+plan.steps.length);
+    petAutoActive=false;updatePetModeState();
+    for(let i=0;i<valid.length;i++){
+      if(epoch!==safetyEpoch || !rxChar || !$('allowMotion').checked || !document.hasFocus() || document.hidden)
+        throw Error('Canceled, locked, disconnected, or page lost focus');
+      const p=valid[i];
+      // Reverse lacks rear sensing, so retain one special safety confirmation.
+      if(p.kind==='move' && p.cm<0 && !confirm('Alvik has no rear obstacle sensor. Confirm the area behind the robot is clear for '+Math.abs(p.cm)+' cm.'))
+        throw Error('Reverse movement canceled');
+      if(epoch!==safetyEpoch || !rxChar || !$('allowMotion').checked || document.hidden)
+        throw Error('Canceled before movement');
+      setStatus('sequenceStatus','Executing step '+(i+1)+' of '+valid.length+' — '+describeMotionPlan([p]));
       await sendWithAck(p.kind==='move'?'V,'+p.cm:'T,'+p.deg,'done',19500);
     }
-    setStatus('sequenceStatus','All steps completed (based on motor acknowledgements).');
-    bubble('Movement sequence completed. Position is an odometry estimate.','system');
-  }catch(err){setStatus('sequenceStatus','Plan stopped: '+err.message);bubble('Movement stopped: '+err.message,'system');
+    if(epoch!==safetyEpoch)throw Error('Movement canceled');
+    setStatus('sequenceStatus','Completed '+valid.length+' step(s) according to Alvik acknowledgements.');
+    bubble('Movement complete. Wheel odometry is an estimate, not an exact measurement.','system');
+  }catch(err){
+    setStatus('sequenceStatus','Movement stopped: '+err.message);
+    bubble('Movement stopped: '+err.message,'system');
     if(rxChar)transmit('S').catch(()=>{});
-  }finally{runningPlan=false;transmit('Q').catch(()=>{});}
+  }finally{
+    runningPlan=false;hidePlan();
+    if(rxChar)transmit('Q').catch(()=>{});
+  }
 }
 async function markHome(){
   try{assertSafeMove();if(runningPlan)throw Error('Wait for the current plan.');
@@ -603,7 +641,7 @@ async function handleAdvanced(command){
   if(command.type==='position'){await transmit('Q');bubble(lastPose?'Estimated position: x '+lastPose.xCm+' cm, y '+lastPose.yCm+' cm, heading '+lastPose.headingDeg+'°. Distance traveled ~'+tripCm+' cm.':'No position yet. Connect robot and wait for telemetry.','bot');return}
   if(command.type==='mark_home'){await markHome();return}
   if(command.type==='go_home'){await goHome();return}
-  if(command.type==='plan'){proposePlan(command.steps);bubble('I prepared the exact movement. Review the plan and press Approve & execute.','bot');return}
+  if(command.type==='plan'){await executePlan(command.steps,'Your command');return}
   if(command.type==='invalid_motion'){bubble('Move request outside safe limits. Use moves up to 50 cm forward, 15 cm backward, or turns up to 180° per step.','bot');return}
   if(command.type==='goal'){
     if(command.goal==='rest'){await setPetMode('rest');return}
@@ -615,10 +653,8 @@ async function handleAdvanced(command){
   if(command.type==='game'){const reply=window.PipGames.begin(command.game);bubble(reply,'bot');say(reply,'happy');return}
   if(command.type==='lights'){await transmit(command.enabled?'I,1':'I,0');bubble('Illuminator command sent.','bot');return}
 }
-$('approvePlan').onclick=executePlan;
-$('cancelPlan').onclick=()=>{pendingPlan=null;hidePlan();setStatus('sequenceStatus','Plan canceled.')};
-$('exactForward').onclick=()=>proposePlan([{kind:'move',cm:Number($('exactCm').value)}],'Manual distance');
-$('exactTurn').onclick=()=>proposePlan([{kind:'turn',deg:Number($('exactDeg').value)}],'Manual turn');
+$('exactForward').onclick=()=>executePlan([{kind:'move',cm:Number($('exactCm').value)}],'Manual distance').catch(err=>bubble(err.message,'system'));
+$('exactTurn').onclick=()=>executePlan([{kind:'turn',deg:Number($('exactDeg').value)}],'Manual turn').catch(err=>bubble(err.message,'system'));
 $('markHome').onclick=markHome;$('goHome').onclick=goHome;
 $('updatePose').onclick=()=>transmit('Q').catch(err=>bubble(err.message,'system'));
 $('startTag').onclick=()=>handleAdvanced({type:'goal',goal:'tag'}).catch(err=>bubble(err.message,'system'));
@@ -670,8 +706,12 @@ async function chat(text, testOnly=false) {
       history=history.slice(-20);
       moodUI(answer.mood||'curious');
       say(answer.reply,answer.mood||'curious');
-      // AI only PROPOSES bounded movements; the user must approve each plan.
-      if(answer.plan && answer.plan.length)proposePlan(answer.plan,'Gemini suggestion');
+      // Directly perform only user-requested, bounded motion. Never execute a
+      // spontaneous suggestion or a model plan attached to a non-motion question.
+      if(answer.plan && answer.plan.length){
+        if(isExplicitMotionRequest(text)) await executePlan(answer.plan,'Gemini command');
+        else bubble('I did not execute the suggested movement because the message was not a direct motion instruction.','system');
+      }
     } else bubble('Pip says: '+answer.reply,'system');
   } catch(err) {
     setStatus('aiStatus','Gemini error: '+err.message);
@@ -693,21 +733,53 @@ $('restPet').onclick=()=>setPetMode('rest');
 $('forwardTest').onclick=()=>chat('go forward');
 $('leftTest').onclick=()=>chat('turn left');
 $('reset').onclick=async()=>{if(!confirm('Is the robot in a clear, safe area? Reset the emergency stop?'))return;try{await transmit('R');estopLatched=false}catch(err){bubble(err.message,'system')}};
-$('mic').onclick=()=>{
-  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SpeechRecognition){bubble('Speech recognition is not supported here. Use Chrome on desktop or type a message.','system');return}
-  if(micRecognition){micRecognition.stop();return}
-  voiceSerial++;if('speechSynthesis' in window)speechSynthesis.cancel();
-  const recognition=new SpeechRecognition();micRecognition=recognition;
-  recognition.lang='en-US';recognition.interimResults=false;recognition.maxAlternatives=1;
-  recognition.onresult=e=>{const text=e.results[0][0].transcript;$('prompt').value=text;chat(text)};
-  recognition.onerror=e=>bubble('Microphone: '+e.error,'system');
-  recognition.onend=()=>{micRecognition=null;$('mic').classList.remove('mic-on')};
-  $('mic').classList.add('mic-on');
-  try{recognition.start()}catch(e){recognition.onend();bubble(e.message,'system')}
-};
-window.addEventListener('beforeunload',()=>{userRequestedDisconnect=true;cancelRetry();if(device&&device.gatt.connected){try{device.gatt.disconnect()}catch(e){}}});
-bubble('Pip online. I can answer questions, plan precise moves for your approval, navigate short distances, and run interactive games.');
+function microphoneState(kind,message){
+  setStatus('micStatus',message);
+  const on=micController && micController.isEnabled();
+  $('mic').textContent=on?'⏹ Mic OFF':'🎙️ Mic ON';
+  $('mic').classList.toggle('mic-on',!!on);
+  $('mic').setAttribute('aria-pressed',String(!!on));
+}
+function handleSpokenCommand(raw){
+  let speech=String(raw||'').trim();
+  if(!speech)return;
+  const prefix=/^(?:(?:hey|okay|ok)\s+)?pip\b[\s,:.!-]*/i;
+  const addressed=prefix.test(speech);
+  if($('wakeWord').checked && !addressed)return;
+  speech=speech.replace(prefix,'').trim();
+  if(!speech)return;
+  // Turn OFF is local and instant, even when an AI request is in progress.
+  if(/^(?:(?:please\s+)?(?:turn|switch)\s+(?:the\s+)?(?:mic|microphone)\s+off|stop\s+listening|mute\s+(?:the\s+)?(?:mic|microphone))\b/i.test(speech)){
+    micController.disable();
+    bubble('Microphone turned off. Click Mic ON to listen again.','system');
+    return;
+  }
+  $('prompt').value=speech;
+  // Uses the SAME movement command parser and emergency STOP as text chat.
+  Promise.resolve(chat(speech)).catch(e=>bubble('Voice command: '+e.message,'system'));
+}
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(SpeechRecognition){
+  micController=window.PipMic.createController({
+    SpeechRecognition,
+    isHidden:()=>document.hidden,
+    onTranscript:handleSpokenCommand,
+    onState:microphoneState,
+    onError:error=>bubble('Microphone: '+error,'system')
+  });
+  $('mic').onclick=()=>micController.toggle();
+  document.addEventListener('visibilitychange',()=>micController.visibilityChanged());
+  $('speech').addEventListener('change',()=>{
+    if(!$('speech').checked && 'speechSynthesis' in window){
+      voiceSerial++;speechSynthesis.cancel();micController.resumeAfterSpeech();
+    }
+  });
+} else {
+  $('mic').disabled=true;
+  setStatus('micStatus','Microphone voice recognition is not supported in this browser. Try Chrome or Edge on Windows.');
+}
+window.addEventListener('beforeunload',()=>{if(micController)micController.disable();userRequestedDisconnect=true;cancelRetry();if(device&&device.gatt.connected){try{device.gatt.disconnect()}catch(e){}}});
+bubble('Pip online. Connect and unlock wheel movement to execute commands immediately. Switch Mic ON for hands-free listening, say “Pip, stop” at any time, or press the emergency stop button.');
 updateMotionState();updatePetModeState();
 refreshSensors();
 </script>
