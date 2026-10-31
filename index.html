@@ -34,7 +34,13 @@
     select{color:var(--text);font:inherit;background:#0e1523;border:1px solid #3b4b65;border-radius:11px;padding:10px;max-width:100%;width:100%}
     .voice-settings{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin-top:12px}
     .voice-settings .field{margin:0}
-    .face{font-size:23px;display:inline-block;margin-right:6px} @media(max-width:820px){.layout{grid-template-columns:1fr}#messages{height:340px}.container{padding:14px 12px}}
+    .face{font-size:23px;display:inline-block;margin-right:6px}
+    .voice-tuning{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+    input[type="range"]{accent-color:var(--accent);padding:0;min-width:0}
+    .voice-tuning input{width:100%}
+    .memory-box{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+    #memoryList{font-size:12px;color:var(--muted);max-height:110px;overflow-y:auto;white-space:pre-wrap;overflow-wrap:anywhere}
+    .tiny-indicator{font-size:12px;color:var(--muted);margin-top:6px} @media(max-width:820px){.layout{grid-template-columns:1fr}#messages{height:340px}.container{padding:14px 12px}}
   </style>
 </head>
 <body>
@@ -63,11 +69,22 @@
         <label style="display:flex;align-items:center;gap:7px"><input type="checkbox" id="speech" checked style="width:auto"> Pip talks out loud</label>
         <label style="display:flex;align-items:center;gap:7px;margin-top:8px"><input type="checkbox" id="chirps" checked style="width:auto"> Play tiny pet chirps</label>
         <div class="voice-settings">
-          <div class="field"><label for="voiceStyle">Pet voice personality</label><select id="voiceStyle"><option value="bouncy">Bouncy Pip (recommended)</option><option value="tiny">Tiny squeaky Pip</option><option value="calm">Sleepy Pip</option></select></div>
+          <div class="field"><label for="voiceStyle">Pet voice personality</label><select id="voiceStyle"><option value="bouncy">Bouncy Pip (recommended)</option><option value="tiny">Tiny squeaky Pip</option><option value="calm">Sleepy Pip</option><option value="sprite">Playful space-pet Pip</option></select></div>
           <div class="field"><label for="voiceChoice">Computer voice</label><select id="voiceChoice"><option value="">System default</option></select></div>
           <button type="button" id="previewVoice" class="slim">Hear Pip</button>
         </div>
-        <p class="hint">Uses your computer's available voices; pitch control varies by operating system.</p>
+        <div class="voice-tuning">
+          <div><label for="voicePitch">Voice pitch <span id="pitchValue">1.42</span></label><input id="voicePitch" type="range" min="0.8" max="2" step="0.05" value="1.42"></div>
+          <div><label for="voiceRate">Voice speed <span id="rateValue">1.13</span></label><input id="voiceRate" type="range" min="0.7" max="1.5" step="0.05" value="1.13"></div>
+        </div>
+        <div class="row" style="margin-top:9px"><button type="button" id="previewChirp" class="slim">Hear a chirp ♪</button><span id="voiceStatus" class="tiny-indicator">Voice ready</span></div>
+        <p class="hint">Pip keeps the chosen voice on this browser. Other devices may have different voices. Pitch and speed depend on the available speech engine.</p>
+        <div class="memory-box">
+          <div class="row"><strong>🧠 Pip's memory box</strong><button type="button" class="slim" id="clearMemory">Clear memory</button></div>
+          <label style="display:flex;align-items:center;gap:7px;margin-top:10px"><input type="checkbox" id="useMemory" checked style="width:auto"> Remember things I explicitly teach Pip</label>
+          <p class="hint">Try “Remember that I like space adventures” and “What do you remember?” Saved on this browser only; enabled memories are sent to Gemini with chat messages.</p>
+          <div id="memoryList">No saved memories</div>
+        </div>
       </div>
     </section>
     <aside class="col">
@@ -102,6 +119,7 @@
   <p class="hint" style="margin-top:17px">Safety: front obstacle detection is still active, and no edge detection is provided. Do not operate near stairs, ledges, small pets, or on elevated surfaces.</p>
 </div>
 <script src="pet_commands.js"></script>
+<script src="pip_memory.js"></script>
 <script>
 'use strict';
 const SERVICE_UUID = 'a7e12e00-6c14-4bcb-b2ae-8ef7ef5de800';
@@ -117,6 +135,8 @@ let petAutoActive=false, lastPetVoiceAt=0;
 let distances = [-1,-1,-1,-1,-1], color = 'unknown', sensedAt = 0, estopLatched = false;
 const moods = {happy:['🐾','H'],excited:['✨','E'],curious:['🐽','C'],shy:['🫧','S'],neutral:['🐣','N'],warning:['⚠️','W']};
 const AI_TIMEOUT_MS = 40000;
+const VOICE_KEY='pip.pet.voice.v2';
+const MEMORY_ENABLED_KEY='pip.pet.memory.enabled';
 
 function setStatus(id, message) { $(id).textContent = message; }
 function bubble(text, role='bot') {
@@ -128,60 +148,103 @@ function bubble(text, role='bot') {
 let chosenMood='curious';
 let voiceList=[];
 const voicePresets = {
-  bouncy:{rate:1.13,pitch:1.42}, tiny:{rate:1.23,pitch:1.75}, calm:{rate:0.87,pitch:1.16}
+  bouncy:{rate:1.13,pitch:1.42},tiny:{rate:1.23,pitch:1.75},
+  calm:{rate:0.87,pitch:1.16},sprite:{rate:1.18,pitch:1.58}
 };
-function loadVoices() {
-  if(!('speechSynthesis' in window))return;
-  const current=$('voiceChoice').value;
-  voiceList=speechSynthesis.getVoices().filter(v=>v.lang.toLowerCase().startsWith('en'));
-  const select=$('voiceChoice'); select.replaceChildren(new Option('Auto • English voice',''));
-  voiceList.forEach(v=>select.add(new Option(v.name+' ('+v.lang+')',v.voiceURI)));
-  if(voiceList.some(v=>v.voiceURI===current)) select.value=current;
+function readVoiceConfig(){
+  try{return JSON.parse(localStorage.getItem(VOICE_KEY)||'{}')}catch(_){return {}}
 }
-if('speechSynthesis' in window) {
+const savedVoice=readVoiceConfig()||{};
+if(voicePresets[savedVoice.style])$('voiceStyle').value=savedVoice.style;
+const startingPreset=voicePresets[$('voiceStyle').value];
+$('voicePitch').value=Number.isFinite(Number(savedVoice.pitch))&&Number(savedVoice.pitch)>=0.8&&Number(savedVoice.pitch)<=2?Number(savedVoice.pitch):startingPreset.pitch;
+$('voiceRate').value=Number.isFinite(Number(savedVoice.rate))&&Number(savedVoice.rate)>=0.7&&Number(savedVoice.rate)<=1.5?Number(savedVoice.rate):startingPreset.rate;
+function updateVoiceLabels(){
+  $('pitchValue').textContent=Number($('voicePitch').value).toFixed(2);
+  $('rateValue').textContent=Number($('voiceRate').value).toFixed(2);
+}
+function saveVoice(){
+  updateVoiceLabels();
+  try{localStorage.setItem(VOICE_KEY,JSON.stringify({style:$('voiceStyle').value,
+    voice:$('voiceChoice').value,pitch:Number($('voicePitch').value),rate:Number($('voiceRate').value)}))}catch(_){}
+}
+updateVoiceLabels();
+function loadVoices(){
+  if(!('speechSynthesis' in window))return;
+  const current=$('voiceChoice').value||savedVoice.voice||'';
+  voiceList=speechSynthesis.getVoices().filter(v=>String(v.lang).toLowerCase().startsWith('en'));
+  const select=$('voiceChoice');select.replaceChildren(new Option('Auto • English voice',''));
+  voiceList.forEach(v=>select.add(new Option(v.name+' ('+v.lang+')',v.voiceURI)));
+  if(voiceList.some(v=>v.voiceURI===current))select.value=current;
+}
+if('speechSynthesis' in window){
   loadVoices();speechSynthesis.addEventListener('voiceschanged',loadVoices);
 }
-function chirp(type='happy') {
+function chirp(type='happy'){
   if(!$('chirps').checked)return 0;
-  try {
+  try{
     const Ctx=window.AudioContext||window.webkitAudioContext;
     if(!Ctx)return 0;
     const ctx=chirp.ctx||(chirp.ctx=new Ctx());
     if(ctx.state==='suspended')ctx.resume().catch(()=>{});
-    const notes=type==='warning'?[420,350]:type==='curious'?[660,810]:[760,1020,840];
-    const start=ctx.currentTime+0.014;
+    // Brief melodic motifs; separate from speech so they sound like a tiny creature.
+    const patterns={warning:[420,345],curious:[625,810],happy:[710,950,795],
+      excited:[740,1030,1240,945],shy:[630,490],neutral:[700,850]};
+    const notes=patterns[type]||patterns.happy,start=ctx.currentTime+0.014;
     notes.forEach((hz,i)=>{
-      const osc=ctx.createOscillator(), gain=ctx.createGain();
-      osc.type='sine';osc.frequency.setValueAtTime(hz,start+i*0.074);
-      gain.gain.setValueAtTime(0.0001,start+i*0.074);
-      gain.gain.exponentialRampToValueAtTime(0.055,start+i*0.074+0.014);
-      gain.gain.exponentialRampToValueAtTime(0.0001,start+i*0.074+0.068);
-      osc.connect(gain);gain.connect(ctx.destination);
-      osc.start(start+i*0.074);osc.stop(start+i*0.074+0.07);
+      const t=start+i*0.076,osc=ctx.createOscillator(),gain=ctx.createGain();
+      osc.type='sine';osc.frequency.setValueAtTime(hz,t);
+      osc.frequency.exponentialRampToValueAtTime(hz*1.08,t+0.045);
+      gain.gain.setValueAtTime(0.0001,t);gain.gain.exponentialRampToValueAtTime(0.043,t+0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001,t+0.069);
+      osc.connect(gain);gain.connect(ctx.destination);osc.start(t);osc.stop(t+0.071);
     });
-    return notes.length*74+25;
-  }catch(e){return 0}
+    return notes.length*76+25;
+  }catch(_){return 0}
 }
 let voiceSerial=0;
-function say(text, mood=chosenMood) {
-  if(!$('speech').checked || !('speechSynthesis' in window))return;
+function say(text,mood=chosenMood){
+  if(!$('speech').checked||!('speechSynthesis' in window))return;
   const serial=++voiceSerial;
   speechSynthesis.cancel();
   const delay=chirp(mood);
-  const utterance=new SpeechSynthesisUtterance(String(text));
-  const p=voicePresets[$('voiceStyle').value]||voicePresets.bouncy;
-  utterance.rate=Math.min(1.7,p.rate+(mood==='excited'?0.05:0));
-  utterance.pitch=Math.min(2,p.pitch+(mood==='excited'?0.06:0));
+  const utterance=new SpeechSynthesisUtterance(String(text).slice(0,750));
+  const moodTuning={excited:[0.07,0.09],happy:[0.02,0.04],curious:[-0.03,0.04],
+    shy:[-0.11,-0.12],warning:[-0.12,-0.17],neutral:[0,0]};
+  const [dr,dp]=moodTuning[mood]||[0,0];
+  utterance.rate=Math.max(0.7,Math.min(1.6,Number($('voiceRate').value)+dr));
+  utterance.pitch=Math.max(0.8,Math.min(2,Number($('voicePitch').value)+dp));
+  utterance.lang='en-US';
   const selected=voiceList.find(v=>v.voiceURI===$('voiceChoice').value);
-  if(selected)utterance.voice=selected;
-  else if(voiceList.length){
-    // Prefer a light, clear English voice when one is installed.
-    utterance.voice=voiceList.find(v=>/Samantha|Zira|Aria|Google US English/i.test(v.name))||voiceList[0];
-  }
+  utterance.voice=selected||voiceList.find(v=>/Zira|Aria|Samantha|Google US English/i.test(v.name))||voiceList[0]||null;
+  utterance.onstart=()=>{if(serial===voiceSerial)setStatus('voiceStatus','🔊 Pip is talking');};
+  utterance.onend=()=>{if(serial===voiceSerial)setStatus('voiceStatus','Voice ready');};
+  utterance.onerror=e=>{if(serial===voiceSerial)setStatus('voiceStatus','Voice could not play: '+e.error);};
   setTimeout(()=>{if(serial===voiceSerial)speechSynthesis.speak(utterance)},delay);
 }
-$('previewVoice').onclick=()=>say('Pip pip! Wiggle time! Wanna play?', 'excited');
-$('voiceStyle').onchange=()=>say('Brrp! This is my voice!', 'happy');
+$('previewVoice').onclick=()=>say('Pip pip! Boop! Wanna go exploring together?', 'excited');
+$('previewChirp').onclick=()=>chirp('excited');
+$('voiceStyle').onchange=()=>{
+  const p=voicePresets[$('voiceStyle').value]||voicePresets.bouncy;
+  $('voicePitch').value=p.pitch;$('voiceRate').value=p.rate;saveVoice();
+  say('Brrp! This is my voice!','happy');
+};
+$('voicePitch').oninput=saveVoice;$('voiceRate').oninput=saveVoice;
+$('voiceChoice').onchange=saveVoice;
+function updateMemories(){
+  const notes=window.PipMemory.load();
+  $('memoryList').textContent=notes.length?notes.map((x,i)=>(i+1)+'. '+x).join('\n'):'No saved memories';
+}
+try{$('useMemory').checked=localStorage.getItem(MEMORY_ENABLED_KEY)!=='false'}catch(_){}
+$('useMemory').onchange=()=>{
+  try{localStorage.setItem(MEMORY_ENABLED_KEY,String($('useMemory').checked))}catch(_){}
+};
+$('clearMemory').onclick=()=>{
+  if(!confirm('Erase Pip’s saved memories from this browser?'))return;
+  if(window.PipMemory.clear()){updateMemories();bubble('Boop! Memory box cleared.','system')}
+  else bubble('Could not clear local memory.','system');
+};
+updateMemories();
 function moodUI(mood) {
   const [face, code] = moods[mood] || moods.neutral;
   chosenMood=mood;$('moodFace').textContent=face;$('moodText').textContent=mood==='warning'?'Careful little Pip':'Pip is '+mood;
@@ -233,7 +296,7 @@ function messageFromRobot(event) {
 }
 function petSound(line, mood) {
   // Local reactions are short and rate-limited. No Gemini request needed.
-  if(Date.now()-lastPetVoiceAt < 11000 || busy)return;
+  if(Date.now()-lastPetVoiceAt < 14000 || busy || (('speechSynthesis' in window)&&speechSynthesis.speaking))return;
   lastPetVoiceAt=Date.now();say(line,mood);
 }
 function updatePetModeState(){
@@ -459,8 +522,12 @@ window.addEventListener('message',event=>{
 async function chat(text, testOnly=false) {
   text=String(text||'').trim();if(!text || busy)return;
   const requestEpoch=safetyEpoch;
-  const command=(!testOnly && window.PetCommands.parsePetCommand(text));
+  const memoryCommand=(!testOnly && $('useMemory').checked && window.PipMemory.handle(text));
+  const command=(!testOnly && !memoryCommand && window.PetCommands.parsePetCommand(text));
   if(!testOnly){bubble(text,'user');$('prompt').value=''}
+  if(memoryCommand){
+    updateMemories();bubble(memoryCommand.reply,'bot');moodUI('happy');say(memoryCommand.reply,'happy');return;
+  }
   if(command){
     busy=true;$('send').disabled=true;
     try{await doPetTrick(command,text,requestEpoch)}
@@ -470,7 +537,10 @@ async function chat(text, testOnly=false) {
   busy=true;$('send').disabled=true;$('testAI').disabled=true;
   try {
     setStatus('aiStatus','Pip is thinking…');
-    const answer=await callAppsScript({message:text,history:history.slice(-16),telemetry:telemetry(),connected:!!rxChar});
+    const answer=await callAppsScript({message:text,history:history.slice(-16),
+      telemetry:telemetry(),connected:!!rxChar,petMode:petAutoActive?'play':'rest',
+      personality:$('voiceStyle').value,
+      memory:$('useMemory').checked?window.PipMemory.load():[]});
     setStatus('aiStatus','Gemini connected ✓');
     if (!testOnly) {
       bubble(answer.reply,'bot');
@@ -514,7 +584,7 @@ $('mic').onclick=()=>{
   try{recognition.start()}catch(e){recognition.onend();bubble(e.message,'system')}
 };
 window.addEventListener('beforeunload',()=>{userRequestedDisconnect=true;cancelRetry();if(device&&device.gatt.connected){try{device.gatt.disconnect()}catch(e){}}});
-bubble('Pip pip! I’m your tiny robot pet! Wanna chat, wiggle, or sniff with my distance sensors?');
+bubble('Pip pip! I’m ready to play, chat, or learn about you. Teach me with “Remember that …” 🐾');
 updateMotionState();updatePetModeState();
 refreshSensors();
 </script>

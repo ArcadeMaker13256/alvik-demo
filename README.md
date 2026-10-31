@@ -1,11 +1,11 @@
 # Pip — Playful Arduino Alvik Robot Pet 🐾
 
-This is the complete **Pip 3.1** browser dashboard and development source. The **hosted website** at the repository root contains all the existing features: Gemini chat, pet-like personality and voice, Web Bluetooth controls, sensor readouts, Play/Rest Mode, wheel safety controls, manual tricks, and connection diagnostics. Pip’s firmware and Gemini Google Apps Script source are kept under `development/` for reference and updates.
+This is the complete **Pip 3.2** browser dashboard and development source. The **hosted website** at the repository root contains all the existing features: Gemini chat, pet-like personality and voice, Web Bluetooth controls, sensor readouts, Play/Rest Mode, wheel safety controls, manual tricks, and connection diagnostics. Pip’s firmware and Gemini Google Apps Script source are kept under `development/` for reference and updates.
 
 ## Publish on GitHub Pages
 
 1. Create a public repository named `pip-pet` in your GitHub account (or connect GitHub in ChatGPT for assisted publishing).
-2. Upload **the contents** of this extracted folder to the **root** of the repository. `index.html` and `pet_commands.js` must sit next to each other in the repository root. Do not upload the ZIP as a single file.
+2. Upload **the contents** of this extracted folder to the **root** of the repository. `index.html`, `pet_commands.js`, and `pip_memory.js` must sit next to each other in the repository root. Do not upload the ZIP as a single file.
 3. Open **Settings → Pages → Build and deployment**. Choose **Deploy from a branch**, then `main` and `/(root)`, and Save.
 4. Your site address will be `https://YOUR-USERNAME.github.io/pip-pet/`. Substitute your real GitHub account name.
 
@@ -37,4 +37,8 @@ Keep the real `GEMINI_API_KEY` and `APP_PIN` in Google Apps Script **Script Prop
 
 **GitHub Pages publishes the website publicly.** Repository source is visible to others. Never commit API keys, PINs, private links, tokens or credentials. The files in this package contain placeholders, not personal API credentials. The Apps Script PIN is a prototype-only safeguard, not a full user account or abuse-prevention system; monitor usage. Always supervise Play Mode in an enclosed, ground-level space away from stairs and ledges; the robot cannot reliably detect edges. Restart Bluetooth and check Windows adapter power settings if disconnections recur.
 
-Prepared from the working Pip 3.1 Bluetooth reliability code; no live GitHub publishing or physical hardware testing is implied.
+Pet memory and expressive browser voice were added to the working Pip 3.1 Bluetooth code; no live GitHub publishing or physical hardware testing is implied.
+
+## Upgrade from your existing GitHub website
+
+See **[UPGRADE_GUIDE.md](UPGRADE_GUIDE.md)** for the shortest update route: replace only the root `index.html`, add root `pip_memory.js`, and deploy the updated `development/apps_script/Code.gs`. The robot `main.py` stays unchanged.
