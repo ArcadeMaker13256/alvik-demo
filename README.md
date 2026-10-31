@@ -1,44 +1,53 @@
-# Pip — Playful Arduino Alvik Robot Pet 🐾
+# Pip 4.0 — Alvik Robotics Lab
 
-This is the complete **Pip 3.2** browser dashboard and development source. The **hosted website** at the repository root contains all the existing features: Gemini chat, pet-like personality and voice, Web Bluetooth controls, sensor readouts, Play/Rest Mode, wheel safety controls, manual tricks, and connection diagnostics. Pip’s firmware and Gemini Google Apps Script source are kept under `development/` for reference and updates.
+Pip is a useful, lively **robot assistant**, not a pretend animal. This release updates the **GitHub Pages dashboard**, the **Google Apps Script / Gemini backend**, and the **Arduino Alvik MicroPython firmware**.
 
-## Publish on GitHub Pages
+**Start here:** Read `INSTALL.md` before replacing code. It is especially important to update `robot/main.py` as well as the website. None of the new precise movement commands work with the old robot program.
 
-1. Create a public repository named `pip-pet` in your GitHub account (or connect GitHub in ChatGPT for assisted publishing).
-2. Upload **the contents** of this extracted folder to the **root** of the repository. `index.html`, `pet_commands.js`, and `pip_memory.js` must sit next to each other in the repository root. Do not upload the ZIP as a single file.
-3. Open **Settings → Pages → Build and deployment**. Choose **Deploy from a branch**, then `main` and `/(root)`, and Save.
-4. Your site address will be `https://YOUR-USERNAME.github.io/pip-pet/`. Substitute your real GitHub account name.
+## Features
 
-## Connect your existing Gemini AI
+- **Exact *requested* move distances and angles:** e.g. `turn 90 degrees left and move forward 1 foot` (converted to approximately 30.5 cm). Alvik's onboard kinematic functions are used; actual movement is still approximate and subject to wheel slip, floor surface and hardware/firmware accuracy.
+- **Starting pose and cumulative trip distance:** display x/y/heading and estimated path length from wheel-based odometry. `Mark start` resets the origin while stopped.
+- **Return to start:** requires direct user confirmation and an unlocked robot, and attempts a direct, forward-only return within 120 cm of the estimated origin. **Not GPS, obstacle-aware pathfinding, SLAM, or guaranteed safe navigation.** The robot stops if the forward path is obstructed; never use near edges, stairs or on elevated surfaces.
+- **Gemini planning with human approval:** Gemini may propose safe bounded step lists, but never gets to run motors directly. Browser validates and previews plans; an explicit Approve button is required.
+- **Purposeful autonomous modes:** Explore, Tag (center-beam proximity target, **not person recognition**), Color Hunt (downward surface labels). Every mode requires an unlocked, visible browser and BLE heartbeat.
+- **Games:** rock-paper-scissors, number guessing, and sequence memory challenge. Games work even when robot/Gemini are disconnected.
+- **Memory Manager:** 200 editable searchable browser-local notes, export/import JSON, explicit save/forget actions. Only up to 12 relevant notes are sent to Gemini with a request. **Not automatically synchronized across devices.**
+- **More sensor information:** five forward ToF zones, occasional top/bottom zones (when supported), filtered distance measurements, calibration offsets, battery, wheel position, pose, orientation, line sensors, touch-button bitmask, RGB LED states, illuminator.
+- **Assistant personality and browser speech:** natural, clear, playful without pet/dog language, voice pitch/rate and voice selector.
 
-The website does **not** contain your Gemini API key, Apps Script deployment URL, or your private PIN. Keep using your existing deployed Google Apps Script backend. In Apps Script → Project Settings → Script Properties, make sure `APP_ORIGINS` contains the URL origin (without `/pip-pet/`):
+## Safety limitations
 
-`http://localhost:8000,https://YOUR-USERNAME.github.io`
+- Keep robot on a **clear, enclosed floor** with adult supervision; no edges/stairs/elevated surfaces. **No dependable edge, rear-obstacle, person or object detection.**
+- `CANCEL` on Alvik is an **emergency stop** that latches until manually reset; software STOP and emergency STOP exist too.
+- Forward distance fails **closed** when center sensor is missing; offsets cannot weaken the conservative safety threshold.
+- Per-step limits: forward <= 50 cm, reverse <= 15 cm, turn <= 180°. Per planned sequence <= 5 steps, total <= 100 cm travel, <= 360° turn. Reverse is particularly dangerous because there is **no rear distance sensor**; it requires an additional confirmation.
+- On BLE disconnect, manual STOP, missed browser heartbeat, or a moving-target timeout, software brakes. Physical interruption / power loss may still create unpredictable behavior.
+- Each motion gets a timeout even if Alvik's hardware reports no completion. Short motors-only tests first with wheels raised, then test short strokes in a safe floor area.
+- Model plans cannot bypass browser confirmation and firmware limits. This is a prototype, not safety-certified navigation.
 
-Keep the real `GEMINI_API_KEY` and `APP_PIN` in Google Apps Script **Script Properties only**. Open the hosted website, enter your existing Apps Script `/exec` URL and private PIN, and click **Test AI connection**.
+## Quick examples
 
-## How the robot connects
+- `Mark start`
+- `Move forward 1 foot`
+- `Turn 90 degrees left and move forward 1 foot`
+- `How far from start?`
+- `Return to start` (confirmation + max 120 cm direct route)
+- `Play tag` (approach an object in the center beam)
+- `Find colors`
+- `Play rock paper scissors`
+- `Remember that my favorite game is chess`
 
-- **Nearby Alvik:** Bluetooth connection can work in supported browsers (Chrome/Edge on Windows, Chrome on compatible Android devices) over HTTPS. Users must explicitly connect to their nearby Alvik. Do not use the site for unattended autonomous operation.
-- **Remote devices:** They can use the AI chat interface, subject to browser/voice support and correct backend configuration. A remote browser **cannot control your Alvik at home** just because the page is hosted online. That would require a separate authorized local bridge.
-- **iPhone/iPad:** Browser support for Web Bluetooth varies; expect AI text chat, not direct Alvik Bluetooth control in normal iOS browsers.
-- **GitHub Pages is static hosting:** Google Apps Script remains the separate Gemini backend; the robot still uses MicroPython firmware.
+## Source and compatibility
 
-## Developer source
+Built around the working Web Bluetooth service IDs from Pip 3.1/3.2 and documented Arduino Alvik library calls (`move`, `rotate`, `get_pose`, `reset_pose`, `get_distance`, `get_line_sensors`, `get_wheels_position`, `get_orientation`, etc.). Use a **matching** Alvik MicroPython library and carrier firmware. The October 2026 Alvik library 1.1.0 changed some APIs and requires matched firmware.
 
-- `development/robot/main.py` — physical Alvik firmware (not executed by GitHub Pages).
-- `development/web_app/` — original development HTML/JavaScript for local tests.
-- `development/apps_script/Code.gs` — Gemini AI backend source (must be manually deployed in Apps Script).
-- `development/tests/` — simulated tests (not a substitute for hardware safety testing).
-- `development/PERSONALITY.md` — Pip’s pet behavior design.
-- `development/README.md` — installation, safety and behavior specifics.
+Official Arduino sources:
+- https://docs.arduino.cc/hardware/alvik
+- https://github.com/arduino/arduino-alvik-mpy
+- https://github.com/arduino/arduino-alvik-mpy/releases
+- https://docs.arduino.cc/tutorials/alvik/api-overview/
 
-## Safety and security
+Gemini API: https://ai.google.dev/api/generate-content
 
-**GitHub Pages publishes the website publicly.** Repository source is visible to others. Never commit API keys, PINs, private links, tokens or credentials. The files in this package contain placeholders, not personal API credentials. The Apps Script PIN is a prototype-only safeguard, not a full user account or abuse-prevention system; monitor usage. Always supervise Play Mode in an enclosed, ground-level space away from stairs and ledges; the robot cannot reliably detect edges. Restart Bluetooth and check Windows adapter power settings if disconnections recur.
-
-Pet memory and expressive browser voice were added to the working Pip 3.1 Bluetooth code; no live GitHub publishing or physical hardware testing is implied.
-
-## Upgrade from your existing GitHub website
-
-See **[UPGRADE_GUIDE.md](UPGRADE_GUIDE.md)** for the shortest update route: replace only the root `index.html`, add root `pip_memory.js`, and deploy the updated `development/apps_script/Code.gs`. The robot `main.py` stays unchanged.
+See `CAPABILITIES.md`, `SENSOR_CALIBRATION.md`, `INSTALL.md`, and `TEST_RESULTS.md`.

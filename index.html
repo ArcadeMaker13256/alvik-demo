@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Alvik Pet — Pip the Robot</title>
+  <title>Pip 4.0 — Alvik Robotics Lab</title>
   <style>
     :root {color-scheme:dark;--bg:#0d111b;--panel:#151c2c;--line:#2b3850;--text:#ecf2ff;--muted:#9baac2;--accent:#6fdcc9;--violet:#b9a5ff;--danger:#ff7382}
     * {box-sizing:border-box} body{margin:0;font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;background:radial-gradient(ellipse at 16% 5%,#1a2844 0%,var(--bg) 46%);color:var(--text)}
@@ -46,30 +46,30 @@
 <body>
 <div class="container">
   <header>
-    <div class="brand"><div class="robot-icon">🤖</div><div><h1>Alvik AI</h1><div class="sub">Meet Pip: a curious little robot pet • powered by Gemini</div></div></div>
+    <div class="brand"><div class="robot-icon">🤖</div><div><h1>Alvik AI</h1><div class="sub">Pip 4.0 · capable robot assistant · powered by Gemini</div></div></div>
     <div id="headline" class="pill">● Robot disconnected</div>
   </header>
   <main class="layout">
     <section class="panel">
-      <div class="panelhead"><span><span class="face" id="moodFace">✨</span> Chat with Pip</span><span class="sub" id="moodText">Curious little pet</span></div>
+      <div class="panelhead"><span><span class="face" id="moodFace">✨</span> Chat with Pip</span><span class="sub" id="moodText">Ready to assist</span></div>
       <div id="messages" aria-live="polite"></div>
       <div class="quick">
-        <button type="button" data-ask="Hi Pip!">Pet Pip</button><button type="button" data-ask="Explore">Explore!</button><button type="button" data-ask="Rest">Nap</button>
-        <button type="button" data-ask="What is around you?">Sniff around</button>
-        <button type="button" data-ask="Please move forward a little.">Tiny step forward</button>
+        <button type="button" data-ask="Hi Pip!">Hello</button><button type="button" data-ask="Explore">Explore</button><button type="button" data-ask="Rest">Rest</button>
+        <button type="button" data-ask="What is around you?">Scan surroundings</button>
+        <button type="button" data-ask="Move forward 8 cm">Tiny step forward</button>
         <button type="button" data-ask="Turn left">Turn left</button>
-        <button type="button" data-ask="Dance">Wiggle!</button>
+        <button type="button" data-ask="Turn right 45 degrees">Rotate</button>
       </div>
       <div class="chat-controls">
         <button id="mic" type="button" title="Speak a message">🎙️</button>
-        <div class="grow"><textarea id="prompt" aria-label="Message to Pip" placeholder="Talk to Pip or say: go forward, turn left, wiggle, stop…"></textarea><div class="hint">Press Enter to send, Shift+Enter for a new line</div></div>
+        <div class="grow"><textarea id="prompt" aria-label="Message to Pip" placeholder="Ask Pip a question, or say: turn left 90 degrees and move forward 1 foot"></textarea><div class="hint">Press Enter to send, Shift+Enter for a new line</div></div>
         <button class="primary" id="send" type="button">Send</button>
       </div>
       <div class="content" style="padding-top:0">
         <label style="display:flex;align-items:center;gap:7px"><input type="checkbox" id="speech" checked style="width:auto"> Pip talks out loud</label>
-        <label style="display:flex;align-items:center;gap:7px;margin-top:8px"><input type="checkbox" id="chirps" checked style="width:auto"> Play tiny pet chirps</label>
+        <label style="display:flex;align-items:center;gap:7px;margin-top:8px"><input type="checkbox" id="chirps" style="width:auto"> Play electronic sound effects</label>
         <div class="voice-settings">
-          <div class="field"><label for="voiceStyle">Pet voice personality</label><select id="voiceStyle"><option value="bouncy">Bouncy Pip (recommended)</option><option value="tiny">Tiny squeaky Pip</option><option value="calm">Sleepy Pip</option><option value="sprite">Playful space-pet Pip</option></select></div>
+          <div class="field"><label for="voiceStyle">Voice character</label><select id="voiceStyle"><option value="bouncy">Upbeat Pip</option><option value="tiny">Bright Pip</option><option value="calm">Calm Pip</option><option value="sprite">Expressive Pip</option></select></div>
           <div class="field"><label for="voiceChoice">Computer voice</label><select id="voiceChoice"><option value="">System default</option></select></div>
           <button type="button" id="previewVoice" class="slim">Hear Pip</button>
         </div>
@@ -77,13 +77,13 @@
           <div><label for="voicePitch">Voice pitch <span id="pitchValue">1.42</span></label><input id="voicePitch" type="range" min="0.8" max="2" step="0.05" value="1.42"></div>
           <div><label for="voiceRate">Voice speed <span id="rateValue">1.13</span></label><input id="voiceRate" type="range" min="0.7" max="1.5" step="0.05" value="1.13"></div>
         </div>
-        <div class="row" style="margin-top:9px"><button type="button" id="previewChirp" class="slim">Hear a chirp ♪</button><span id="voiceStatus" class="tiny-indicator">Voice ready</span></div>
-        <p class="hint">Pip keeps the chosen voice on this browser. Other devices may have different voices. Pitch and speed depend on the available speech engine.</p>
+        <div class="row" style="margin-top:9px"><button type="button" id="previewChirp" class="slim">Preview sound</button><span id="voiceStatus" class="tiny-indicator">Voice ready</span></div>
+        <p class="hint">Pip uses the selected computer voice. Other devices may have different voices. Pitch and speed depend on the available speech engine.</p>
         <div class="memory-box">
-          <div class="row"><strong>🧠 Pip's memory box</strong><button type="button" class="slim" id="clearMemory">Clear memory</button></div>
+          <div class="row"><strong>🧠 Memory Manager (200 notes)</strong><button type="button" class="slim" id="clearMemory">Clear memory</button></div>
           <label style="display:flex;align-items:center;gap:7px;margin-top:10px"><input type="checkbox" id="useMemory" checked style="width:auto"> Remember things I explicitly teach Pip</label>
-          <p class="hint">Try “Remember that I like space adventures” and “What do you remember?” Saved on this browser only; enabled memories are sent to Gemini with chat messages.</p>
-          <div id="memoryList">No saved memories</div>
+          <p class="hint">Up to 200 editable notes stored in this browser. Export/import them to another device. Only relevant notes go to Gemini. Never save secrets.</p>
+          <div class="row"><input id="memorySearch" placeholder="Search memories" style="flex:1"><button id="memoryAdd" class="slim" type="button">Add</button><button id="exportMemory" class="slim" type="button">Export</button><button id="importMemory" class="slim" type="button">Import</button><input id="memoryImportFile" type="file" accept=".json,application/json" hidden></div><div id="memoryList" style="max-height:270px">No saved memories</div><div id="memoryCount" class="hint"></div>
         </div>
       </div>
     </section>
@@ -99,15 +99,31 @@
         <div class="row"><button id="connect" class="primary">Connect Alvik</button><button id="disconnect" type="button">Disconnect</button><button id="refresh" type="button">Read sensors</button></div>
         <p class="hint">Bluetooth: Chrome or Edge on Windows, or Chrome on Android. HTTPS required for online access. iPhone/iPad can chat but cannot directly control Alvik over Web Bluetooth. Keep the robot nearby.</p>
         <div class="row" style="margin-top:15px"><button id="stop" class="danger">■ STOP</button><button id="estop" class="danger">Emergency stop</button><button id="reset" type="button">Reset stop</button></div>
-        <label style="display:flex;align-items:center;gap:8px;margin-top:12px"><input type="checkbox" id="allowMotion" style="width:auto"> Unlock wheel movement (OFF by default)</label>
-        <div class="row" style="margin-top:12px"><button class="primary" id="startPlay" type="button">🐾 Start Play Mode</button><button type="button" id="restPet">💤 Rest Mode</button></div>
-        <div class="status" id="petModeState">Pip is resting. Play Mode is OFF.</div>
-        <p class="hint">Play Mode keeps Pip exploring in small bursts and taking short naps. It only works while this page is open and connected. First test with wheels raised. Press physical CANCEL to emergency stop. Never use near edges or stairs.</p>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:12px"><input type="checkbox" id="allowMotion" style="width:auto"> Unlock motor movement (OFF by default)</label>
+        <div class="row" style="margin-top:12px"><button class="primary" id="startPlay" type="button">Explore</button><button type="button" id="startTag">Play tag</button><button type="button" id="startColor">Color hunt</button><button type="button" id="restPet">Rest</button></div>
+        <div class="status" id="petModeState">Pip is resting. Autonomous goals are OFF.</div>
+        <p class="hint">Goal modes: Explore clears obstacles; Tag attempts to follow an object in the center beam; Color Hunt records changing floor-color labels. No camera/person detection. A visible tab, Bluetooth, and movement unlock are required. Keep on the floor away from stairs and ledges.</p>
         <div class="row" style="margin-top:10px"><button type="button" id="forwardTest" class="slim">Test tiny forward step</button><button type="button" id="leftTest" class="slim">Test tiny left turn</button></div>
-        <div class="status" id="motionState">Wheel tricks LOCKED</div>
+        <div class="status" id="motionState">Movement LOCKED</div>
         <div class="status" id="robotStatus">Not connected.</div>
         <div class="status" id="linkDiagnostics" style="border-left:3px solid #6fdcc9;padding-left:9px;margin-top:10px">Bluetooth diagnostics: waiting for connection.</div>
         <p class="hint">If Pip stops playing but the heading still says Connected, that is a safety heartbeat or hidden-tab pause, not a Bluetooth disconnection. A real GATT disconnect will show a reconnect attempt here.</p>
+      </div></section>
+      <section class="panel"><div class="panelhead">Precise navigation <span class="sub">Odometry, not GPS</span></div><div class="content">
+        <div class="row"><label style="flex:1">Distance (cm)<input id="exactCm" type="number" min="-15" max="50" step="0.1" value="30.48"></label><button id="exactForward">Move exact</button><label style="flex:1">Turn (degrees)<input id="exactDeg" type="number" min="-180" max="180" step="1" value="90"></label><button id="exactTurn">Turn exact</button></div>
+        <div class="row"><button id="markHome" type="button">Mark start</button><button id="goHome" type="button">Return to start</button><button id="updatePose" type="button">Update position</button></div>
+        <div class="note">Position estimate from wheel odometry: <strong id="poseText">Unknown</strong><div id="tripText">Trip distance: —</div>Mark start only while stopped. Return follows a short direct route (max 120 cm), not an obstacle map; it will stop when blocked.</div>
+        <div id="planBox" class="note" style="margin-top:10px;display:none"><strong>Review the proposed motor plan</strong><div id="planText"></div><div class="row"><button id="approvePlan" class="primary" type="button">Approve &amp; execute</button><button id="cancelPlan" type="button">Cancel</button></div></div>
+        <div class="status" id="sequenceStatus">No motion plan pending.</div>
+      </div></section>
+      <section class="panel"><div class="panelhead">Interactive games</div><div class="content"><div class="row"><button id="gameRps">Rock · Paper · Scissors</button><button id="gameNumber">Guess the number</button><button id="gameMemory">Memory challenge</button></div><p class="hint">Chat to play. Games use the web app, so they work without Bluetooth or Gemini.</p></div></section>
+      <section class="panel"><div class="panelhead">Hardware capabilities &amp; sensor tuning</div><div class="content">
+        <div class="note">Battery: <strong id="batteryStatus">—</strong> · Line (L/C/R): <strong id="lineStatus">—</strong> · Orientation: <strong id="imuStatus">—</strong> · Tag/color score: <strong id="gameScore">0</strong><div>Wheel angles: <strong id="wheelsStatus">—</strong> · Touch buttons: <strong id="touchStatus">—</strong> · Upper/lower ToF: <strong id="extraTof">—</strong></div></div>
+        <div class="row" style="margin-top:9px"><button id="lightsOn">Illuminator ON</button><button id="lightsOff">Illuminator OFF</button></div>
+        <p class="hint">Distance calibration: put a flat target at a measured distance, compare each displayed zone, and set the correction (actual − observed, max ±10 cm). Corrections are saved in this browser and uploaded on connection; restart/other-device calibration requires this browser.</p>
+        <div class="row"><label>Zone<select id="calZone"><option value="0">Left</option><option value="1">Center-left</option><option value="2" selected>Center</option><option value="3">Center-right</option><option value="4">Right</option></select></label><label>Correction cm<input id="calOffset" type="number" value="0" step="1" min="-10" max="10"></label><button id="applyCal">Save calibration</button></div>
+        <div class="status" id="calStatus">Unknown/no reading = blocked. Filtering is on the robot, not an excuse to drive blind.</div>
+        <p class="hint">Additional Alvik hardware includes touch buttons, encoders, two motor wheels, RGB LEDs, downward color &amp; line sensing, and expansion connectors. Some peripherals require separately installed modules and firmware; see the capabilities guide.</p>
       </div></section>
       <section class="panel"><div class="panelhead">What Alvik senses <span class="sub" id="sensorAge">No data</span></div><div class="content">
         <div class="sensors" id="sensors"><div class="sensor"><strong>—</strong><small>L</small></div><div class="sensor"><strong>—</strong><small>CL</small></div><div class="sensor"><strong>—</strong><small>C</small></div><div class="sensor"><strong>—</strong><small>CR</small></div><div class="sensor"><strong>—</strong><small>R</small></div></div>
@@ -118,7 +134,7 @@
   </main>
   <p class="hint" style="margin-top:17px">Safety: front obstacle detection is still active, and no edge detection is provided. Do not operate near stairs, ledges, small pets, or on elevated surfaces.</p>
 </div>
-<script src="pet_commands.js"></script>
+<script src="pip_commands.js"></script><script src="pip_games.js"></script>
 <script src="pip_memory.js"></script>
 <script>
 'use strict';
@@ -132,8 +148,9 @@ let lastBLEMessageAt=0, connectedAt=0;
 const RETRY_DELAYS_MS=[1200,2500,5000,9000];
 let history = [], pending = new Map(), sendChain = Promise.resolve(), safetyEpoch = 0;
 let petAutoActive=false, lastPetVoiceAt=0;
+let lastPose=null, tripCm=null, pendingPlan=null, motionWait=null, runningPlan=false;
 let distances = [-1,-1,-1,-1,-1], color = 'unknown', sensedAt = 0, estopLatched = false;
-const moods = {happy:['🐾','H'],excited:['✨','E'],curious:['🐽','C'],shy:['🫧','S'],neutral:['🐣','N'],warning:['⚠️','W']};
+const moods = {happy:['🙂','H'],excited:['⚡','E'],curious:['🔎','C'],shy:['💤','S'],neutral:['🤖','N'],warning:['⚠️','W']};
 const AI_TIMEOUT_MS = 40000;
 const VOICE_KEY='pip.pet.voice.v2';
 const MEMORY_ENABLED_KEY='pip.pet.memory.enabled';
@@ -187,7 +204,7 @@ function chirp(type='happy'){
     if(!Ctx)return 0;
     const ctx=chirp.ctx||(chirp.ctx=new Ctx());
     if(ctx.state==='suspended')ctx.resume().catch(()=>{});
-    // Brief melodic motifs; separate from speech so they sound like a tiny creature.
+    // Optional electronic sounds, separate from the assistant voice.
     const patterns={warning:[420,345],curious:[625,810],happy:[710,950,795],
       excited:[740,1030,1240,945],shy:[630,490],neutral:[700,850]};
     const notes=patterns[type]||patterns.happy,start=ctx.currentTime+0.014;
@@ -222,28 +239,42 @@ function say(text,mood=chosenMood){
   utterance.onerror=e=>{if(serial===voiceSerial)setStatus('voiceStatus','Voice could not play: '+e.error);};
   setTimeout(()=>{if(serial===voiceSerial)speechSynthesis.speak(utterance)},delay);
 }
-$('previewVoice').onclick=()=>say('Pip pip! Boop! Wanna go exploring together?', 'excited');
+$('previewVoice').onclick=()=>say('Hello. I am Pip, your robot assistant. Ready for our next mission.', 'happy');
 $('previewChirp').onclick=()=>chirp('excited');
 $('voiceStyle').onchange=()=>{
   const p=voicePresets[$('voiceStyle').value]||voicePresets.bouncy;
   $('voicePitch').value=p.pitch;$('voiceRate').value=p.rate;saveVoice();
-  say('Brrp! This is my voice!','happy');
+  say('This is my updated voice. Ready to help.','happy');
 };
 $('voicePitch').oninput=saveVoice;$('voiceRate').oninput=saveVoice;
 $('voiceChoice').onchange=saveVoice;
 function updateMemories(){
-  const notes=window.PipMemory.load();
-  $('memoryList').textContent=notes.length?notes.map((x,i)=>(i+1)+'. '+x).join('\n'):'No saved memories';
+  const root=$('memoryList');root.replaceChildren();
+  const all=window.PipMemory.entries();
+  const search=$('memorySearch').value.toLowerCase().trim();
+  const results=all.filter(x=>x.text.toLowerCase().includes(search));
+  if(!results.length)root.textContent='No matching memories.';
+  for(const item of results){
+    const line=document.createElement('div');line.className='row';line.style.margin='7px 0';
+    const txt=document.createElement('span');txt.style.flex='1';txt.style.minWidth='140px';txt.textContent=item.text;
+    const edit=document.createElement('button');edit.className='slim';edit.textContent='Edit';edit.onclick=()=>{
+      const t=prompt('Edit saved memory:',item.text);
+      if(t!==null){if(!window.PipMemory.edit(item.id,t))alert('Memory could not be edited.');updateMemories();}
+    };
+    const del=document.createElement('button');del.className='slim';del.textContent='Delete';del.onclick=()=>{window.PipMemory.remove(item.id);updateMemories()};
+    line.append(txt,edit,del);root.append(line);
+  }
+  $('memoryCount').textContent=all.length+' / '+window.PipMemory.MAX+' saved on this browser. Export to use on other devices.';
 }
-try{$('useMemory').checked=localStorage.getItem(MEMORY_ENABLED_KEY)!=='false'}catch(_){}
-$('useMemory').onchange=()=>{
-  try{localStorage.setItem(MEMORY_ENABLED_KEY,String($('useMemory').checked))}catch(_){}
-};
-$('clearMemory').onclick=()=>{
-  if(!confirm('Erase Pip’s saved memories from this browser?'))return;
-  if(window.PipMemory.clear()){updateMemories();bubble('Boop! Memory box cleared.','system')}
-  else bubble('Could not clear local memory.','system');
-};
+$('memorySearch').oninput=updateMemories;
+$('memoryAdd').onclick=()=>{const text=prompt('What should Pip remember?');if(text!==null){if(!window.PipMemory.add(text))alert('Could not save that memory.');updateMemories()}};
+$('exportMemory').onclick=()=>{const blob=new Blob([window.PipMemory.exportData()],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='pip-memory-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+$('importMemory').onclick=()=>$('memoryImportFile').click();
+$('memoryImportFile').onchange=async e=>{const file=e.target.files[0];if(!file)return;
+  if(!confirm('Replace all existing memories on this device with the imported memories?'))return;
+  const result=window.PipMemory.importData(await file.text());if(!result.ok)alert(result.error);updateMemories();e.target.value=''};
+$('clearMemory').onclick=()=>{if(confirm('Permanently clear local memories on this device?')){window.PipMemory.clear();updateMemories()}};
 updateMemories();
 function moodUI(mood) {
   const [face, code] = moods[mood] || moods.neutral;
@@ -262,7 +293,7 @@ function refreshSensors() {
   $('sensorAge').textContent=sensedAt ? Math.max(0,Math.round((Date.now()-sensedAt)/1000))+'s ago':'No data';
 }
 function telemetry() {
-  return { distancesCm: sensedAt && Date.now()-sensedAt < 4000 ? distances : [-1,-1,-1,-1,-1],
+  return { pose: lastPose, tripCm: tripCm, distancesCm: sensedAt && Date.now()-sensedAt < 4000 ? distances : [-1,-1,-1,-1,-1],
     color: color, ageMs: sensedAt ? Date.now()-sensedAt : 999999};
 }
 function messageFromRobot(event) {
@@ -274,8 +305,31 @@ function messageFromRobot(event) {
   } else if (p[0]==='D1'&&p.length===3) {
     distances[3]=Number(p[1]);distances[4]=Number(p[2]);sensedAt=Date.now();
   } else if (p[0]==='C') {color=p.slice(1).join(',');}
+  else if(p[0]==='X' && p.length===4){
+    lastPose={xCm:Number(p[1]),yCm:Number(p[2]),headingDeg:Number(p[3])};
+    $('poseText').textContent='x '+p[1]+' cm, y '+p[2]+' cm, heading '+p[3]+'°';
+  } else if(p[0]==='D2'){$('extraTof').textContent=p[1]+' / '+p[2]+' cm'}
+  else if(p[0]==='J' && p.length>=2){
+    tripCm=Number(p[1]);$('tripText').textContent='Estimated distance traveled: '+tripCm+' cm';
+    if(p[2])$('gameScore').textContent=p[2];
+  } else if(p[0]==='B'){
+    $('batteryStatus').textContent=p[1]+'%';$('lineStatus').textContent=p.slice(2).join(' / ');
+  } else if(p[0]==='U'){$('imuStatus').textContent='roll '+p[1]+'°, pitch '+p[2]+'°, yaw '+p[3]+'°';}
+  else if(p[0]==='W'){$('wheelsStatus').textContent=p[1]+'° / '+p[2]+'°'}
+  else if(p[0]==='T'){$('touchStatus').textContent=Number(p[1])?'Pressed mask '+p[1]:'none'}
+
   else if (p[0]==='A') {
     const status=p[1]||'';setStatus('robotStatus','Robot: '+status);
+    if(motionWait){
+      if(status==='done' && motionWait.expect==='done') {const w=motionWait;motionWait=null;w.resolve(status)}
+      else if(status==='home' && motionWait.expect==='home'){const w=motionWait;motionWait=null;w.resolve(status)}
+      else if(['blocked','nosensor','badcmd','error','timeout','linklost','range','notready','toofar','homefailed','estop'].includes(status)){
+        const w=motionWait;motionWait=null;w.reject(Error('Robot: '+status));
+      }
+    }
+    if(status==='home')bubble('Return to marked start completed (estimated odometry).','system');
+    if(status==='homemarked')bubble('New starting position marked.','system');
+
     if (status==='estop') {petAutoActive=false;updatePetModeState();estopLatched=true;bubble('Emergency stop is active. Reset it manually when safe.','system')}
     if (status==='ready') estopLatched=false;
     if (status==='blocked') {bubble('Pip paused: something seems too close ahead. Try another direction or clear the path.','system');moodUI('warning');}
@@ -283,14 +337,16 @@ function messageFromRobot(event) {
     if (status==='badcmd'||status==='error') bubble('Motor command failed: '+status+'. Check robot firmware and Alvik power.','system');
   } else if(p[0]==='P') {
     const eventName=p[1];
+    if(['explore','tag','color'].includes(eventName)){petAutoActive=true;updatePetModeState();setStatus('petModeState','Goal running: '+eventName);}
+    if(eventName==='tagged')bubble('Tag scored! Touch/near-range target counted by center sensor.','system');
     if(eventName==='play') {petAutoActive=true;updatePetModeState();moodUI('excited');}
     if(['rest','linklost'].includes(eventName)) {petAutoActive=false;updatePetModeState();moodUI('shy');}
-    if(eventName==='nap') {setStatus('petModeState','💤 Pip is taking a little nap (will wake up automatically).');moodUI('shy');petSound('Yaaawn... tiny wheel nap.','shy');}
-    if(eventName==='wake') {setStatus('petModeState','🐾 Pip woke up and is exploring.');moodUI('happy');petSound('Pip pip! I am awake!', 'happy');}
+    if(eventName==='nap') {setStatus('petModeState','💤 Pip is taking a little nap (will wake up automatically).');moodUI('shy');petSound('Pausing to rest.','shy');}
+    if(eventName==='wake') {setStatus('petModeState','🐾 Pip woke up and is exploring.');moodUI('happy');petSound('Resuming exploration.', 'happy');}
     if(eventName==='nosensor') {setStatus('petModeState','⚠️ Pip is pausing; center distance reading is unavailable.');}
-    if(eventName==='obstacle') {moodUI('curious');petSound('Brrp! Something in my way. Let me turn!', 'curious');}
-    if(eventName==='color' && p[2]) {petSound('Pip! I found '+p[2].toLowerCase()+'!', 'curious');}
-    if(eventName==='linklost') {setStatus('linkDiagnostics','Bluetooth is still connected, but Play Mode stopped because the 6.5-second safety heartbeat was missed. Keep this tab visible.');bubble('Play Mode stopped: missed the safety heartbeat (not a Bluetooth disconnect).','system');}
+    if(eventName==='obstacle') {moodUI('curious');petSound('Obstacle detected. Finding a clearer route.', 'curious');}
+    if(eventName==='color' && p[2]) {petSound('Color sensor noticed '+p[2].toLowerCase()+'.', 'curious');}
+    if(eventName==='linklost') {setStatus('linkDiagnostics','Bluetooth is still connected, but Autonomous mode stopped because the 6.5-second safety heartbeat was missed. Keep this tab visible.');bubble('Autonomous mode stopped: missed the safety heartbeat (not a Bluetooth disconnect).','system');}
   }
   refreshSensors();
 }
@@ -300,13 +356,15 @@ function petSound(line, mood) {
   lastPetVoiceAt=Date.now();say(line,mood);
 }
 function updatePetModeState(){
-  setStatus('petModeState',petAutoActive?'🐾 Play Mode ON: exploring, reacting, and taking short naps.':'💤 Pip is resting. Play Mode is OFF.');
+  setStatus('petModeState',petAutoActive?'Autonomous goal running: supervised obstacle-aware motions.':'Pip is resting. Goals are OFF.');
 }
-function updateMotionState(){ $('motionState').textContent=$('allowMotion').checked?'Wheel tricks UNLOCKED • supervised only':'Wheel tricks LOCKED'; }
+function updateMotionState(){ $('motionState').textContent=$('allowMotion').checked?'Movement UNLOCKED • supervised only':'Movement LOCKED'; }
 $('allowMotion').onchange=()=>{updateMotionState();if(!$('allowMotion').checked){petAutoActive=false;updatePetModeState();if(rxChar)sendStop(false)}};
 function resetBluetoothState(message) {
   // This disarms movement even if the browser reconnects later.
   safetyEpoch++;petAutoActive=false;updatePetModeState();
+  if(motionWait){const w=motionWait;motionWait=null;w.reject(Error('Bluetooth disconnected'))}
+  pendingPlan=null;hidePlan();runningPlan=false;
   $('allowMotion').checked=false;updateMotionState();
   rxChar=null;txChar=null;sendChain=Promise.resolve();
   distances=[-1,-1,-1,-1,-1];sensedAt=0;
@@ -355,9 +413,10 @@ async function openBluetoothLink(isRetry=false) {
     cancelRetry();reconnectAttempts=0;connectedAt=Date.now();lastBLEMessageAt=0;
     $('bleState').textContent='Connected';$('headline').textContent='● Robot connected';
     setStatus('robotStatus','Connected to '+device.name+'.');
-    setStatus('linkDiagnostics',isRetry?'Reconnected ✓. Play Mode OFF; unlock motion only when safe.':'Connected ✓. Watch the sensors; no automatic movement.');
+    setStatus('linkDiagnostics',isRetry?'Reconnected ✓. Autonomous mode OFF; unlock motion only when safe.':'Connected ✓. Watch the sensors; no automatic movement.');
     await transmit('Q');
-    if(isRetry) bubble('Pip reconnected. Play Mode remains OFF and wheel movement is locked for safety.','system');
+    try{await uploadCalibration()}catch(err){bubble('Calibration upload: '+err.message,'system')}
+    if(isRetry) bubble('Pip reconnected. Autonomous mode remains OFF and wheel movement is locked for safety.','system');
     else bubble('Pip is connected! Keep wheels raised for the first motion test.','system');
   } catch(err) {
     setStatus('linkDiagnostics','Bluetooth error: '+(err && err.message || String(err)));
@@ -404,6 +463,8 @@ async function transmit(command) {
 }
 async function sendStop(emergency=false) {
   safetyEpoch++;petAutoActive=false;updatePetModeState();
+  pendingPlan=null;hidePlan();
+  if(motionWait){const w=motionWait;motionWait=null;w.reject(Error('Movement canceled by STOP'))}
   if ('speechSynthesis' in window){voiceSerial++;speechSynthesis.cancel()}
   if (!rxChar) {bubble('Connect to Alvik to send a stop command.','system');return}
   try {await transmit(emergency?'E':'S');if(emergency)estopLatched=true;
@@ -417,79 +478,28 @@ async function setPetMode(mode) {
     else bubble('Pip is already resting (Bluetooth disconnected).','system');
     moodUI('shy');return;
   }
-  if(!rxChar) {bubble('Connect Bluetooth before enabling Play Mode.','system');return}
+  if(!rxChar) {bubble('Connect Bluetooth before enabling a goal.','system');return}
   if(!$('allowMotion').checked) {bubble('Unlock wheel movement first, after testing with wheels raised.','system');return}
   if(estopLatched) {bubble('Emergency stop must be reset manually first.','system');return}
   try {
     await transmit('P,1');petAutoActive=true;updatePetModeState();
-    moodUI('excited');petSound('Pip pip! Exploring time!', 'excited');
-  }catch(err){petAutoActive=false;updatePetModeState();bubble('Play Mode failed: '+err.message,'system')}
+    moodUI('excited');petSound('Exploration started.', 'excited');
+  }catch(err){petAutoActive=false;updatePetModeState();bubble('Autonomous mode failed: '+err.message,'system')}
 }
-// A browser heartbeat is required to keep autonomous motion armed.
+// A browser heartbeat is required for any unlocked motion, not just game mode.
 setInterval(()=>{
-  if(!petAutoActive || !rxChar)return;
+  if(!rxChar || (!$('allowMotion').checked && !petAutoActive))return;
   if(document.hidden) {sendStop(false);return;}
-  transmit('P,H').catch(()=>{petAutoActive=false;updatePetModeState()});
+  transmit('H').catch(()=>{petAutoActive=false;updatePetModeState()});
 },1450);
 document.addEventListener('visibilitychange',()=>{
-  if(document.hidden && petAutoActive){
+  if(document.hidden && (petAutoActive || runningPlan)){
     sendStop(false);
-    setStatus('linkDiagnostics','Play Mode paused because you switched tabs. Bluetooth may still be connected.');
+    setStatus('linkDiagnostics','Autonomous mode paused because you switched tabs. Bluetooth may still be connected.');
   }
   if(!document.hidden && device && !rxChar && !userRequestedDisconnect && !connectBusy) scheduleReconnect();
 });
 const directionCodes={forward:'F',backward:'B',left:'L',right:'R'};
-async function runAction(action, requestEpoch) {
-  if (!action || !action.type || action.type==='none') return false;
-  if (action.type==='stop') {await sendStop(!!action.emergency);return true}
-  if (action.type!=='move')return false;
-  if(requestEpoch!==safetyEpoch) {bubble('Movement canceled by STOP/disconnection.','system');return false}
-  if(!$('allowMotion').checked) {bubble('Wheel tricks are locked! Check "Unlock tiny tricks" after the raised-wheel safety test.','system');return false}
-  if(!rxChar) {bubble('Pip needs Bluetooth connected to move.','system');return false}
-  if(estopLatched) {bubble('Emergency stop is active. Reset only after the robot is safe.','system');return false}
-  const code=directionCodes[action.direction];if(!code)return false;
-  const ms=Math.round(Number(action.duration_ms)),rpm=Math.round(Number(action.speed_rpm));
-  if(!(ms>=80&&ms<=800&&rpm>=8&&rpm<=24))return false;
-  // Robot firmware always samples and validates real-time sensors before F.
-  // Browser sensor telemetry can be stale/missing; never use it as the final gate.
-  try {
-    await transmit('M,'+code+','+ms+','+rpm);
-    return true;
-  } catch(err) {bubble('Movement was not sent: '+err.message,'system');return false}
-}
-async function doPetTrick(action, text, requestEpoch) {
-  if(action.type==='affection') {
-    const replies=['Bweee! Tail-wiggle mode!','Pip pip! More head pats!','Brrp! My LEDs are doing happy dances!','Boop-boop! Treat accepted!'];
-    const line=replies[Math.floor(Math.random()*replies.length)];
-    bubble(line,'bot');moodUI('happy');say(line,'happy');
-    return;
-  }
-  if(action.type==='pet_mode') {
-    await setPetMode(action.mode);
-    bubble(action.mode==='play'?'Pip-pip! Time for adventures!':'Yaaawn... curling up for a nap.','bot');
-    return;
-  }
-  const direction=action.direction;
-  if(action.type==='stop') {
-    await sendStop(action.emergency);
-    moodUI(action.emergency?'warning':'shy');
-    bubble(action.emergency?'Pip! Emergency paws-down!':'Boop. Paws parked.','bot');
-    return;
-  }
-  const sent=await runAction(action,requestEpoch);
-  if(sent){
-    moodUI('excited');
-    const talk={forward:'Pip! Tiny step ahead!',backward:'Brrp! Scooting back!',left:'Wheee! Left wiggle!',right:'Wheee! Right wiggle!'};
-    const reply=talk[direction]||'Pip!';
-    bubble(reply,'bot');say(reply,'excited');
-    // An accepted BLE write is NOT proof that the robot moved; watch A,moving/A,blocked.
-  } else {
-    moodUI('curious');
-    const reply='Pip? My wheels are locked or I need Bluetooth. Check the robot status!';
-    bubble(reply,'bot');say(reply,'curious');
-  }
-}
-
 function callAppsScript(payload) {
   const url=$('backend').value.trim();
   if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec(?:\?.*)?$/.test(url)) {
@@ -519,40 +529,153 @@ window.addEventListener('message',event=>{
   if(!googleOrigin || !event.data || event.data.app!=='alvik-ai') return;
   const cb=pending.get(event.data.requestId);if(cb)cb(event.data.result||{error:'Empty response'});
 });
+function hidePlan(){
+  $('planBox').style.display='none';
+  $('planText').textContent='';
+}
+function proposePlan(steps, source='typed request'){
+  const valid=window.PipCommands.validate(steps);
+  if(!valid){bubble('I cannot perform that move: keep each forward step <= 50 cm, backward <= 15 cm, turn <= 180°, and plan <= 5 steps/100 cm.','system');return}
+  pendingPlan={steps:valid,epoch:safetyEpoch};
+  $('planBox').style.display='block';
+  $('planText').textContent=source+': '+valid.map(p=>p.kind==='move' ? 'move '+p.cm+' cm' : 'turn '+p.deg+'° (positive = left)').join(' → ');
+  setStatus('sequenceStatus','Plan waiting for your approval. No motors have moved.');
+}
+function waitForStatus(expect='done',limit=18000){
+  if(motionWait)throw Error('Another movement is already in progress.');
+  return new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>{if(motionWait===holder){motionWait=null;reject(Error('No completion acknowledgement from robot'))}},limit);
+    const holder={expect,resolve:v=>{clearTimeout(timer);resolve(v)},reject:e=>{clearTimeout(timer);reject(e)}};
+    motionWait=holder;
+  });
+}
+async function sendWithAck(cmd,expect='done',limit=18000){
+  const completion=waitForStatus(expect,limit);
+  try{await transmit(cmd);}catch(err){if(motionWait){const w=motionWait;motionWait=null;w.reject(err)}}
+  return completion;
+}
+function assertSafeMove(){
+  if(!rxChar)throw Error('Connect Alvik first.');
+  if(!$('allowMotion').checked)throw Error('Unlock motor movement first, in a safe floor area.');
+  if(estopLatched)throw Error('Emergency stop is active.');
+  if(document.hidden)throw Error('Keep this browser tab visible.');
+}
+async function executePlan(){
+  if(!pendingPlan || runningPlan)return;
+  const plan=pendingPlan;pendingPlan=null;hidePlan();
+  try{assertSafeMove()}catch(err){bubble(err.message,'system');return}
+  runningPlan=true;const epoch=safetyEpoch;
+  try{
+    await transmit('P,0');
+    for(let i=0;i<plan.steps.length;i++){
+      if(epoch!==safetyEpoch || !rxChar || !document.hasFocus() || document.hidden)throw Error('Canceled or page lost focus');
+      const p=plan.steps[i];
+      if(p.kind==='move' && p.cm<0 && !confirm('Alvik has no rear obstacle sensor. Is the area behind the robot clear for '+Math.abs(p.cm)+' cm?'))throw Error('Backward movement canceled');
+      setStatus('sequenceStatus','Executing step '+(i+1)+' of '+plan.steps.length);
+      await sendWithAck(p.kind==='move'?'V,'+p.cm:'T,'+p.deg,'done',19500);
+    }
+    setStatus('sequenceStatus','All steps completed (based on motor acknowledgements).');
+    bubble('Movement sequence completed. Position is an odometry estimate.','system');
+  }catch(err){setStatus('sequenceStatus','Plan stopped: '+err.message);bubble('Movement stopped: '+err.message,'system');
+    if(rxChar)transmit('S').catch(()=>{});
+  }finally{runningPlan=false;transmit('Q').catch(()=>{});}
+}
+async function markHome(){
+  try{assertSafeMove();if(runningPlan)throw Error('Wait for the current plan.');
+    if(!confirm('Mark the current floor position as the new starting point? The robot must be stationary.'))return;
+    await transmit('Z');
+  }catch(err){bubble(err.message,'system')}
+}
+async function goHome(){
+  try{assertSafeMove();if(runningPlan)throw Error('Wait for the current plan.');
+    if(!lastPose)throw Error('Read position first.');
+    const radius=Math.hypot(lastPose.xCm,lastPose.yCm);
+    if(radius>120)throw Error('Too far from start (maximum 120 cm).');
+    if(!confirm('Return toward marked start (~'+Math.round(radius)+' cm away)? This uses estimated wheel odometry and a direct path, NOT a map. Confirm clear, enclosed floor, away from stairs.'))return;
+    runningPlan=true;setStatus('sequenceStatus','Returning to start. Keep the tab visible; STOP if needed.');
+    await sendWithAck('G','home',80000);
+    setStatus('sequenceStatus','Robot reported home. Check final position manually.');
+  }catch(err){bubble('Return to start stopped: '+err.message,'system');if(rxChar)transmit('S').catch(()=>{});
+  }finally{runningPlan=false;transmit('Q').catch(()=>{})}
+}
+async function handleAdvanced(command){
+  if(command.type==='stop'){await sendStop(command.emergency);bubble('Stopped.','bot');return}
+  if(command.type==='position'){await transmit('Q');bubble(lastPose?'Estimated position: x '+lastPose.xCm+' cm, y '+lastPose.yCm+' cm, heading '+lastPose.headingDeg+'°. Distance traveled ~'+tripCm+' cm.':'No position yet. Connect robot and wait for telemetry.','bot');return}
+  if(command.type==='mark_home'){await markHome();return}
+  if(command.type==='go_home'){await goHome();return}
+  if(command.type==='plan'){proposePlan(command.steps);bubble('I prepared the exact movement. Review the plan and press Approve & execute.','bot');return}
+  if(command.type==='invalid_motion'){bubble('Move request outside safe limits. Use moves up to 50 cm forward, 15 cm backward, or turns up to 180° per step.','bot');return}
+  if(command.type==='goal'){
+    if(command.goal==='rest'){await setPetMode('rest');return}
+    assertSafeMove();
+    await transmit(({tag:'P,T',color:'P,C',explore:'P,1'})[command.goal]);
+    petAutoActive=true;updatePetModeState();setStatus('petModeState','Goal running: '+command.goal);
+    bubble('Goal started: '+command.goal+'. Press Rest or STOP anytime.','bot');return;
+  }
+  if(command.type==='game'){const reply=window.PipGames.begin(command.game);bubble(reply,'bot');say(reply,'happy');return}
+  if(command.type==='lights'){await transmit(command.enabled?'I,1':'I,0');bubble('Illuminator command sent.','bot');return}
+}
+$('approvePlan').onclick=executePlan;
+$('cancelPlan').onclick=()=>{pendingPlan=null;hidePlan();setStatus('sequenceStatus','Plan canceled.')};
+$('exactForward').onclick=()=>proposePlan([{kind:'move',cm:Number($('exactCm').value)}],'Manual distance');
+$('exactTurn').onclick=()=>proposePlan([{kind:'turn',deg:Number($('exactDeg').value)}],'Manual turn');
+$('markHome').onclick=markHome;$('goHome').onclick=goHome;
+$('updatePose').onclick=()=>transmit('Q').catch(err=>bubble(err.message,'system'));
+$('startTag').onclick=()=>handleAdvanced({type:'goal',goal:'tag'}).catch(err=>bubble(err.message,'system'));
+$('startColor').onclick=()=>handleAdvanced({type:'goal',goal:'color'}).catch(err=>bubble(err.message,'system'));
+$('lightsOn').onclick=()=>handleAdvanced({type:'lights',enabled:true}).catch(err=>bubble(err.message,'system'));
+$('lightsOff').onclick=()=>handleAdvanced({type:'lights',enabled:false}).catch(err=>bubble(err.message,'system'));
+const CAL_KEY='pip.sensor.offsets.v1';
+function calibration(){try{const c=JSON.parse(localStorage.getItem(CAL_KEY)||'[]');return Array.isArray(c)&&c.length===5?c:[0,0,0,0,0]}catch(_){return [0,0,0,0,0]}}
+async function uploadCalibration(){const a=calibration();for(let i=0;i<5;i++)await transmit('K,'+i+','+a[i]);}
+$('applyCal').onclick=async()=>{const index=Number($('calZone').value),offset=Number($('calOffset').value);
+  if(!Number.isInteger(offset)||Math.abs(offset)>10){setStatus('calStatus','Use integer offset between -10 and +10 cm');return}
+  const a=calibration();a[index]=offset;try{localStorage.setItem(CAL_KEY,JSON.stringify(a));if(rxChar)await transmit('K,'+index+','+offset);setStatus('calStatus','Saved zone '+index+' correction: '+offset+' cm. Test against ruler again.');}
+  catch(err){setStatus('calStatus','Calibration failed: '+err.message)};
+};
+$('calZone').onchange=()=>{$('calOffset').value=calibration()[Number($('calZone').value)]};
+for(const [id,game] of [['gameRps','rps'],['gameNumber','number'],['gameMemory','sequence']]){
+  $(id).onclick=()=>{const t=window.PipGames.begin(game);bubble(t,'bot');say(t,'happy')};
+}
 async function chat(text, testOnly=false) {
-  text=String(text||'').trim();if(!text || busy)return;
+  text=String(text||'').trim();if(!text)return;
+  // STOP must work even if a slow Gemini request is already in progress.
+  const urgent=!testOnly && window.PipCommands.parse(text);
+  if(urgent && urgent.type==='stop'){
+    bubble(text,'user');$('prompt').value='';await handleAdvanced(urgent);return;
+  }
+  if(busy)return;
   const requestEpoch=safetyEpoch;
   const memoryCommand=(!testOnly && $('useMemory').checked && window.PipMemory.handle(text));
-  const command=(!testOnly && !memoryCommand && window.PetCommands.parsePetCommand(text));
+  const command=(!testOnly && !memoryCommand && window.PipCommands.parse(text));
   if(!testOnly){bubble(text,'user');$('prompt').value=''}
-  if(memoryCommand){
-    updateMemories();bubble(memoryCommand.reply,'bot');moodUI('happy');say(memoryCommand.reply,'happy');return;
+  if(memoryCommand){updateMemories();bubble(memoryCommand.reply,'bot');say(memoryCommand.reply,'happy');return}
+  if(command && command.type==='stop'){await handleAdvanced(command);return}
+  if(!testOnly && window.PipGames.isActive() && !command){
+    const line=window.PipGames.play(text);bubble(line,'bot');say(line,'happy');return;
   }
-  if(command){
-    busy=true;$('send').disabled=true;
-    try{await doPetTrick(command,text,requestEpoch)}
-    finally{busy=false;$('send').disabled=false}
-    return; // Commands are local: even Gemini 503 cannot block the wheels.
-  }
+  if(command){try{await handleAdvanced(command)}catch(err){bubble(err.message,'system')}return;}
   busy=true;$('send').disabled=true;$('testAI').disabled=true;
   try {
     setStatus('aiStatus','Pip is thinking…');
-    const answer=await callAppsScript({message:text,history:history.slice(-16),
+    const answer=await callAppsScript({message:text,history:history.slice(-8),
       telemetry:telemetry(),connected:!!rxChar,petMode:petAutoActive?'play':'rest',
       personality:$('voiceStyle').value,
-      memory:$('useMemory').checked?window.PipMemory.load():[]});
+      memory:$('useMemory').checked?window.PipMemory.context(text):[]});
     setStatus('aiStatus','Gemini connected ✓');
+    if(requestEpoch!==safetyEpoch)return; // STOP/disconnect invalidated this AI response.
     if (!testOnly) {
       bubble(answer.reply,'bot');
       history.push({role:'user',text:text},{role:'model',text:answer.reply});
       history=history.slice(-20);
       moodUI(answer.mood||'curious');
       say(answer.reply,answer.mood||'curious');
-      // Gemini never directly commands motors in Pet 2.0.
+      // AI only PROPOSES bounded movements; the user must approve each plan.
+      if(answer.plan && answer.plan.length)proposePlan(answer.plan,'Gemini suggestion');
     } else bubble('Pip says: '+answer.reply,'system');
   } catch(err) {
     setStatus('aiStatus','Gemini error: '+err.message);
-    bubble('Brrp! My cloud brain is sleepy right now. My tiny tricks still work!','bot');
+    bubble('AI is temporarily unavailable. Local controls and games still work.','bot');
     bubble('AI diagnostic: '+err.message,'system');
   } finally {busy=false;$('send').disabled=false;$('testAI').disabled=false}
 }
@@ -584,7 +707,7 @@ $('mic').onclick=()=>{
   try{recognition.start()}catch(e){recognition.onend();bubble(e.message,'system')}
 };
 window.addEventListener('beforeunload',()=>{userRequestedDisconnect=true;cancelRetry();if(device&&device.gatt.connected){try{device.gatt.disconnect()}catch(e){}}});
-bubble('Pip pip! I’m ready to play, chat, or learn about you. Teach me with “Remember that …” 🐾');
+bubble('Pip online. I can answer questions, plan precise moves for your approval, navigate short distances, and run interactive games.');
 updateMotionState();updatePetModeState();
 refreshSensors();
 </script>
