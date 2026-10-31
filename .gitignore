@@ -1,0 +1,10 @@
+# Local secrets and generated files — never commit real credentials
+.env
+.env.*
+!.env.example
+*.log
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+node_modules/

@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alvik Pet — Pip the Robot</title>
+  <style>
+    :root {color-scheme:dark;--bg:#0d111b;--panel:#151c2c;--line:#2b3850;--text:#ecf2ff;--muted:#9baac2;--accent:#6fdcc9;--violet:#b9a5ff;--danger:#ff7382}
+    * {box-sizing:border-box} body{margin:0;font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;background:radial-gradient(ellipse at 16% 5%,#1a2844 0%,var(--bg) 46%);color:var(--text)}
+    .container{max-width:1150px;margin:auto;padding:24px 18px 36px} header{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:20px;flex-wrap:wrap}
+    .brand{display:flex;align-items:center;gap:14px}.robot-icon{width:58px;height:58px;display:grid;place-items:center;border:2px solid #6fdcc955;border-radius:17px;background:#193c42;font-size:31px;box-shadow:0 0 32px #47cba530}
+    h1{font-size:30px;letter-spacing:-.7px;margin:0}.sub{font-size:13px;color:var(--muted)}
+    .pill{border:1px solid var(--line);border-radius:99px;padding:8px 13px;color:var(--muted);font-size:13px}
+    .layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,1fr);gap:17px}
+    .panel{border:1px solid var(--line);background:#151c2ce8;border-radius:20px;box-shadow:0 16px 35px #060b1850;overflow:hidden}
+    .panelhead{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding:16px 20px;font-weight:650}
+    #messages{height:430px;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+    .bubble{max-width:88%;padding:12px 14px;border-radius:15px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+    .bubble.bot{background:#27354c;align-self:flex-start;border-bottom-left-radius:4px}.bubble.user{background:#285b59;align-self:flex-end;border-bottom-right-radius:4px}
+    .bubble.system{background:transparent;border:1px dashed #53627c;align-self:center;font-size:13px;color:var(--muted)}
+    .who{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#a5e3d6;margin-bottom:4px;font-weight:700}
+    .quick{display:flex;flex-wrap:wrap;gap:8px;padding:0 20px 14px} .quick button{font-size:12px;padding:6px 10px}
+    .chat-controls{border-top:1px solid var(--line);padding:15px 17px;display:flex;gap:10px;align-items:flex-end}
+    textarea,input{color:var(--text);font:inherit;background:#0e1523;border:1px solid #3b4b65;border-radius:11px;outline:none} textarea:focus,input:focus{border-color:var(--accent)}
+    textarea{width:100%;min-height:52px;max-height:125px;resize:vertical;padding:12px} input{padding:10px;width:100%;min-width:0}
+    button{cursor:pointer;background:#22324a;color:var(--text);border:1px solid #425574;padding:10px 13px;border-radius:10px;font-weight:600;font:inherit;transition:.15s}
+    button:hover:not(:disabled){border-color:var(--accent);background:#2b4057}button:disabled{opacity:.45;cursor:not-allowed}
+    button.primary{background:#2a796f;border-color:#51bdae;font-weight:700}button.danger{background:#7a2839;border-color:#ce6071}button.slim{font-size:13px;padding:7px 10px}
+    .col{display:flex;flex-direction:column;gap:17px}.content{padding:17px 20px}.field{margin-bottom:13px}label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600}
+    .hint{font-size:12px;color:var(--muted);margin:6px 0 0}.row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.grow{flex:1}.status{font-size:13px;color:var(--muted);margin-top:8px}
+    .sensors{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;text-align:center}.sensor{border:1px solid var(--line);background:#101a2a;border-radius:9px;padding:11px 3px}.sensor strong{font-size:17px;display:block}.sensor small{font-size:11px;color:var(--muted)}
+    .sensor.warn{border-color:#aa5762;background:#39222d}.muted{color:var(--muted)}.tiny{font-size:12px}.note{padding:10px 12px;background:#1c293d;border-left:3px solid var(--accent);border-radius:5px;font-size:12px;color:#b9c8e0}
+    #mic.mic-on{background:#663044;border-color:#fa8298;animation:pulse 1.2s infinite}@keyframes pulse{50%{box-shadow:0 0 0 6px #ff83991b}}
+    select{color:var(--text);font:inherit;background:#0e1523;border:1px solid #3b4b65;border-radius:11px;padding:10px;max-width:100%;width:100%}
+    .voice-settings{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin-top:12px}
+    .voice-settings .field{margin:0}
+    .face{font-size:23px;display:inline-block;margin-right:6px} @media(max-width:820px){.layout{grid-template-columns:1fr}#messages{height:340px}.container{padding:14px 12px}}
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="brand"><div class="robot-icon">🤖</div><div><h1>Alvik AI</h1><div class="sub">Meet Pip: a curious little robot pet • powered by Gemini</div></div></div>
+    <div id="headline" class="pill">● Robot disconnected</div>
+  </header>
+  <main class="layout">
+    <section class="panel">
+      <div class="panelhead"><span><span class="face" id="moodFace">✨</span> Chat with Pip</span><span class="sub" id="moodText">Curious little pet</span></div>
+      <div id="messages" aria-live="polite"></div>
+      <div class="quick">
+        <button type="button" data-ask="Hi Pip!">Pet Pip</button><button type="button" data-ask="Explore">Explore!</button><button type="button" data-ask="Rest">Nap</button>
+        <button type="button" data-ask="What is around you?">Sniff around</button>
+        <button type="button" data-ask="Please move forward a little.">Tiny step forward</button>
+        <button type="button" data-ask="Turn left">Turn left</button>
+        <button type="button" data-ask="Dance">Wiggle!</button>
+      </div>
+      <div class="chat-controls">
+        <button id="mic" type="button" title="Speak a message">🎙️</button>
+        <div class="grow"><textarea id="prompt" aria-label="Message to Pip" placeholder="Talk to Pip or say: go forward, turn left, wiggle, stop…"></textarea><div class="hint">Press Enter to send, Shift+Enter for a new line</div></div>
+        <button class="primary" id="send" type="button">Send</button>
+      </div>
+      <div class="content" style="padding-top:0">
+        <label style="display:flex;align-items:center;gap:7px"><input type="checkbox" id="speech" checked style="width:auto"> Pip talks out loud</label>
+        <label style="display:flex;align-items:center;gap:7px;margin-top:8px"><input type="checkbox" id="chirps" checked style="width:auto"> Play tiny pet chirps</label>
+        <div class="voice-settings">
+          <div class="field"><label for="voiceStyle">Pet voice personality</label><select id="voiceStyle"><option value="bouncy">Bouncy Pip (recommended)</option><option value="tiny">Tiny squeaky Pip</option><option value="calm">Sleepy Pip</option></select></div>
+          <div class="field"><label for="voiceChoice">Computer voice</label><select id="voiceChoice"><option value="">System default</option></select></div>
+          <button type="button" id="previewVoice" class="slim">Hear Pip</button>
+        </div>
+        <p class="hint">Uses your computer's available voices; pitch control varies by operating system.</p>
+      </div>
+    </section>
+    <aside class="col">
+      <section class="panel"><div class="panelhead">Connect AI</div><div class="content">
+        <div class="field"><label for="backend">Google Apps Script web app URL</label><input id="backend" type="url" placeholder="https://script.google.com/macros/s/.../exec"></div>
+        <div class="field"><label for="pin">Private app passphrase</label><input id="pin" type="password" placeholder="APP_PIN from Script Properties" autocomplete="off"></div>
+        <p class="hint">Your Gemini API key stays in Apps Script. This private passphrase stays in this page's memory, not local storage.</p>
+        <button id="testAI" type="button" class="slim">Test AI connection</button>
+        <div class="status" id="aiStatus">AI not tested</div>
+      </div></section>
+      <section class="panel"><div class="panelhead">Robot Bluetooth <span id="bleState" class="sub">Not connected</span></div><div class="content">
+        <div class="row"><button id="connect" class="primary">Connect Alvik</button><button id="disconnect" type="button">Disconnect</button><button id="refresh" type="button">Read sensors</button></div>
+        <p class="hint">Bluetooth: Chrome or Edge on Windows, or Chrome on Android. HTTPS required for online access. iPhone/iPad can chat but cannot directly control Alvik over Web Bluetooth. Keep the robot nearby.</p>
+        <div class="row" style="margin-top:15px"><button id="stop" class="danger">■ STOP</button><button id="estop" class="danger">Emergency stop</button><button id="reset" type="button">Reset stop</button></div>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:12px"><input type="checkbox" id="allowMotion" style="width:auto"> Unlock wheel movement (OFF by default)</label>
+        <div class="row" style="margin-top:12px"><button class="primary" id="startPlay" type="button">🐾 Start Play Mode</button><button type="button" id="restPet">💤 Rest Mode</button></div>
+        <div class="status" id="petModeState">Pip is resting. Play Mode is OFF.</div>
+        <p class="hint">Play Mode keeps Pip exploring in small bursts and taking short naps. It only works while this page is open and connected. First test with wheels raised. Press physical CANCEL to emergency stop. Never use near edges or stairs.</p>
+        <div class="row" style="margin-top:10px"><button type="button" id="forwardTest" class="slim">Test tiny forward step</button><button type="button" id="leftTest" class="slim">Test tiny left turn</button></div>
+        <div class="status" id="motionState">Wheel tricks LOCKED</div>
+        <div class="status" id="robotStatus">Not connected.</div>
+        <div class="status" id="linkDiagnostics" style="border-left:3px solid #6fdcc9;padding-left:9px;margin-top:10px">Bluetooth diagnostics: waiting for connection.</div>
+        <p class="hint">If Pip stops playing but the heading still says Connected, that is a safety heartbeat or hidden-tab pause, not a Bluetooth disconnection. A real GATT disconnect will show a reconnect attempt here.</p>
+      </div></section>
+      <section class="panel"><div class="panelhead">What Alvik senses <span class="sub" id="sensorAge">No data</span></div><div class="content">
+        <div class="sensors" id="sensors"><div class="sensor"><strong>—</strong><small>L</small></div><div class="sensor"><strong>—</strong><small>CL</small></div><div class="sensor"><strong>—</strong><small>C</small></div><div class="sensor"><strong>—</strong><small>CR</small></div><div class="sensor"><strong>—</strong><small>R</small></div></div>
+        <p class="hint">Distance in centimeters. Color underneath: <strong id="color">unknown</strong>.</p>
+        <div class="note">Alvik does not have a camera. Its “seeing” means distance and color-sensor readings, not identifying objects or people.</div>
+      </div></section>
+    </aside>
+  </main>
+  <p class="hint" style="margin-top:17px">Safety: front obstacle detection is still active, and no edge detection is provided. Do not operate near stairs, ledges, small pets, or on elevated surfaces.</p>
+</div>
+<script src="pet_commands.js"></script>
+<script>
+'use strict';
+const SERVICE_UUID = 'a7e12e00-6c14-4bcb-b2ae-8ef7ef5de800';
+const RX_UUID = 'a7e12e01-6c14-4bcb-b2ae-8ef7ef5de800';
+const TX_UUID = 'a7e12e02-6c14-4bcb-b2ae-8ef7ef5de800';
+const $ = id => document.getElementById(id);
+let device = null, rxChar = null, txChar = null, busy = false, micRecognition = null;
+let userRequestedDisconnect=false, reconnectTimer=null, reconnectAttempts=0, connectBusy=false, bleGeneration=0;
+let lastBLEMessageAt=0, connectedAt=0;
+const RETRY_DELAYS_MS=[1200,2500,5000,9000];
+let history = [], pending = new Map(), sendChain = Promise.resolve(), safetyEpoch = 0;
+let petAutoActive=false, lastPetVoiceAt=0;
+let distances = [-1,-1,-1,-1,-1], color = 'unknown', sensedAt = 0, estopLatched = false;
+const moods = {happy:['🐾','H'],excited:['✨','E'],curious:['🐽','C'],shy:['🫧','S'],neutral:['🐣','N'],warning:['⚠️','W']};
+const AI_TIMEOUT_MS = 40000;
+
+function setStatus(id, message) { $(id).textContent = message; }
+function bubble(text, role='bot') {
+  const div = document.createElement('div'); div.className = 'bubble ' + role;
+  if (role !== 'system') {const who=document.createElement('div');who.className='who';who.textContent=role==='bot'?'Alvik':'You';div.appendChild(who)}
+  div.appendChild(document.createTextNode(String(text)));
+  $('messages').appendChild(div);$('messages').scrollTop=$('messages').scrollHeight;
+}
+let chosenMood='curious';
+let voiceList=[];
+const voicePresets = {
+  bouncy:{rate:1.13,pitch:1.42}, tiny:{rate:1.23,pitch:1.75}, calm:{rate:0.87,pitch:1.16}
+};
+function loadVoices() {
+  if(!('speechSynthesis' in window))return;
+  const current=$('voiceChoice').value;
+  voiceList=speechSynthesis.getVoices().filter(v=>v.lang.toLowerCase().startsWith('en'));
+  const select=$('voiceChoice'); select.replaceChildren(new Option('Auto • English voice',''));
+  voiceList.forEach(v=>select.add(new Option(v.name+' ('+v.lang+')',v.voiceURI)));
+  if(voiceList.some(v=>v.voiceURI===current)) select.value=current;
+}
+if('speechSynthesis' in window) {
+  loadVoices();speechSynthesis.addEventListener('voiceschanged',loadVoices);
+}
+function chirp(type='happy') {
+  if(!$('chirps').checked)return 0;
+  try {
+    const Ctx=window.AudioContext||window.webkitAudioContext;
+    if(!Ctx)return 0;
+    const ctx=chirp.ctx||(chirp.ctx=new Ctx());
+    if(ctx.state==='suspended')ctx.resume().catch(()=>{});
+    const notes=type==='warning'?[420,350]:type==='curious'?[660,810]:[760,1020,840];
+    const start=ctx.currentTime+0.014;
+    notes.forEach((hz,i)=>{
+      const osc=ctx.createOscillator(), gain=ctx.createGain();
+      osc.type='sine';osc.frequency.setValueAtTime(hz,start+i*0.074);
+      gain.gain.setValueAtTime(0.0001,start+i*0.074);
+      gain.gain.exponentialRampToValueAtTime(0.055,start+i*0.074+0.014);
+      gain.gain.exponentialRampToValueAtTime(0.0001,start+i*0.074+0.068);
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.start(start+i*0.074);osc.stop(start+i*0.074+0.07);
+    });
+    return notes.length*74+25;
+  }catch(e){return 0}
+}
+let voiceSerial=0;
+function say(text, mood=chosenMood) {
+  if(!$('speech').checked || !('speechSynthesis' in window))return;
+  const serial=++voiceSerial;
+  speechSynthesis.cancel();
+  const delay=chirp(mood);
+  const utterance=new SpeechSynthesisUtterance(String(text));
+  const p=voicePresets[$('voiceStyle').value]||voicePresets.bouncy;
+  utterance.rate=Math.min(1.7,p.rate+(mood==='excited'?0.05:0));
+  utterance.pitch=Math.min(2,p.pitch+(mood==='excited'?0.06:0));
+  const selected=voiceList.find(v=>v.voiceURI===$('voiceChoice').value);
+  if(selected)utterance.voice=selected;
+  else if(voiceList.length){
+    // Prefer a light, clear English voice when one is installed.
+    utterance.voice=voiceList.find(v=>/Samantha|Zira|Aria|Google US English/i.test(v.name))||voiceList[0];
+  }
+  setTimeout(()=>{if(serial===voiceSerial)speechSynthesis.speak(utterance)},delay);
+}
+$('previewVoice').onclick=()=>say('Pip pip! Wiggle time! Wanna play?', 'excited');
+$('voiceStyle').onchange=()=>say('Brrp! This is my voice!', 'happy');
+function moodUI(mood) {
+  const [face, code] = moods[mood] || moods.neutral;
+  chosenMood=mood;$('moodFace').textContent=face;$('moodText').textContent=mood==='warning'?'Careful little Pip':'Pip is '+mood;
+  if (rxChar) transmit('L,'+code).catch(()=>{});
+}
+function refreshSensors() {
+  const names=['L','CL','C','CR','R'];
+  $('sensors').replaceChildren(...distances.map((v,i)=>{
+    const outer=document.createElement('div');outer.className='sensor'+(v>0&&v<(i===2?17:12)?' warn':'');
+    const num=document.createElement('strong');num.textContent=v>0?String(v):'—';
+    const label=document.createElement('small');label.textContent=names[i];
+    outer.append(num,label);return outer;
+  }));
+  $('color').textContent=color;
+  $('sensorAge').textContent=sensedAt ? Math.max(0,Math.round((Date.now()-sensedAt)/1000))+'s ago':'No data';
+}
+function telemetry() {
+  return { distancesCm: sensedAt && Date.now()-sensedAt < 4000 ? distances : [-1,-1,-1,-1,-1],
+    color: color, ageMs: sensedAt ? Date.now()-sensedAt : 999999};
+}
+function messageFromRobot(event) {
+  lastBLEMessageAt=Date.now();
+  const line = new TextDecoder().decode(event.target.value).trim();
+  const p=line.split(',');
+  if (p[0]==='D0' && p.length===4) {
+    distances[0]=Number(p[1]);distances[1]=Number(p[2]);distances[2]=Number(p[3]);sensedAt=Date.now();
+  } else if (p[0]==='D1'&&p.length===3) {
+    distances[3]=Number(p[1]);distances[4]=Number(p[2]);sensedAt=Date.now();
+  } else if (p[0]==='C') {color=p.slice(1).join(',');}
+  else if (p[0]==='A') {
+    const status=p[1]||'';setStatus('robotStatus','Robot: '+status);
+    if (status==='estop') {petAutoActive=false;updatePetModeState();estopLatched=true;bubble('Emergency stop is active. Reset it manually when safe.','system')}
+    if (status==='ready') estopLatched=false;
+    if (status==='blocked') {bubble('Pip paused: something seems too close ahead. Try another direction or clear the path.','system');moodUI('warning');}
+    if (status==='nosensor') bubble('Pip cannot read the center distance sensor yet. Forward motion stays locked for safety.','system');
+    if (status==='badcmd'||status==='error') bubble('Motor command failed: '+status+'. Check robot firmware and Alvik power.','system');
+  } else if(p[0]==='P') {
+    const eventName=p[1];
+    if(eventName==='play') {petAutoActive=true;updatePetModeState();moodUI('excited');}
+    if(['rest','linklost'].includes(eventName)) {petAutoActive=false;updatePetModeState();moodUI('shy');}
+    if(eventName==='nap') {setStatus('petModeState','💤 Pip is taking a little nap (will wake up automatically).');moodUI('shy');petSound('Yaaawn... tiny wheel nap.','shy');}
+    if(eventName==='wake') {setStatus('petModeState','🐾 Pip woke up and is exploring.');moodUI('happy');petSound('Pip pip! I am awake!', 'happy');}
+    if(eventName==='nosensor') {setStatus('petModeState','⚠️ Pip is pausing; center distance reading is unavailable.');}
+    if(eventName==='obstacle') {moodUI('curious');petSound('Brrp! Something in my way. Let me turn!', 'curious');}
+    if(eventName==='color' && p[2]) {petSound('Pip! I found '+p[2].toLowerCase()+'!', 'curious');}
+    if(eventName==='linklost') {setStatus('linkDiagnostics','Bluetooth is still connected, but Play Mode stopped because the 6.5-second safety heartbeat was missed. Keep this tab visible.');bubble('Play Mode stopped: missed the safety heartbeat (not a Bluetooth disconnect).','system');}
+  }
+  refreshSensors();
+}
+function petSound(line, mood) {
+  // Local reactions are short and rate-limited. No Gemini request needed.
+  if(Date.now()-lastPetVoiceAt < 11000 || busy)return;
+  lastPetVoiceAt=Date.now();say(line,mood);
+}
+function updatePetModeState(){
+  setStatus('petModeState',petAutoActive?'🐾 Play Mode ON: exploring, reacting, and taking short naps.':'💤 Pip is resting. Play Mode is OFF.');
+}
+function updateMotionState(){ $('motionState').textContent=$('allowMotion').checked?'Wheel tricks UNLOCKED • supervised only':'Wheel tricks LOCKED'; }
+$('allowMotion').onchange=()=>{updateMotionState();if(!$('allowMotion').checked){petAutoActive=false;updatePetModeState();if(rxChar)sendStop(false)}};
+function resetBluetoothState(message) {
+  // This disarms movement even if the browser reconnects later.
+  safetyEpoch++;petAutoActive=false;updatePetModeState();
+  $('allowMotion').checked=false;updateMotionState();
+  rxChar=null;txChar=null;sendChain=Promise.resolve();
+  distances=[-1,-1,-1,-1,-1];sensedAt=0;
+  $('bleState').textContent='Not connected';$('headline').textContent='● Robot disconnected';
+  setStatus('robotStatus',message || 'Bluetooth disconnected. Movement is disabled.');
+  refreshSensors();
+}
+function cancelRetry(){if(reconnectTimer!==null){clearTimeout(reconnectTimer);reconnectTimer=null}}
+function disconnectHandler() {
+  if(userRequestedDisconnect) {resetBluetoothState('Disconnected by you.');setStatus('linkDiagnostics','Manually disconnected.');return;}
+  const lastSeen=lastBLEMessageAt?((Date.now()-lastBLEMessageAt)/1000).toFixed(1)+'s ago':'never';
+  resetBluetoothState('Bluetooth link dropped. Wheel movement stays locked.');
+  setStatus('linkDiagnostics','Actual Bluetooth disconnect detected • last robot data: '+lastSeen+'.');
+  if(!userRequestedDisconnect && device && !document.hidden) scheduleReconnect();
+}
+function scheduleReconnect() {
+  if (userRequestedDisconnect || !device || document.hidden || reconnectTimer!==null || connectBusy) return;
+  if(reconnectAttempts>=RETRY_DELAYS_MS.length) {
+    setStatus('linkDiagnostics','Automatic reconnection failed after 4 tries. Click Connect Alvik again.');return;
+  }
+  const delay=RETRY_DELAYS_MS[reconnectAttempts++], generation=bleGeneration;
+  setStatus('linkDiagnostics','Bluetooth dropped. Reconnecting (try '+reconnectAttempts+'/4) in '+(delay/1000).toFixed(1)+'s. Movement remains locked.');
+  reconnectTimer=setTimeout(()=>{
+    reconnectTimer=null;
+    if(generation===bleGeneration && !document.hidden && !userRequestedDisconnect) openBluetoothLink(true);
+  }, delay);
+}
+async function openBluetoothLink(isRetry=false) {
+  if(connectBusy || !device)return;
+  const generation=bleGeneration;
+  connectBusy=true;
+  try {
+    setStatus('robotStatus',isRetry?'Reconnecting to Pip…':'Connecting to Pip…');
+    const server=await device.gatt.connect();
+    const service=await server.getPrimaryService(SERVICE_UUID);
+    const rx=await service.getCharacteristic(RX_UUID);
+    const tx=await service.getCharacteristic(TX_UUID);
+    await tx.startNotifications();
+    if(generation!==bleGeneration || userRequestedDisconnect) {
+      if(device && device.gatt.connected)device.gatt.disconnect();
+      return;
+    }
+    rxChar=rx;txChar=tx;
+    txChar.addEventListener('characteristicvaluechanged',messageFromRobot);
+    sendChain=Promise.resolve();
+    cancelRetry();reconnectAttempts=0;connectedAt=Date.now();lastBLEMessageAt=0;
+    $('bleState').textContent='Connected';$('headline').textContent='● Robot connected';
+    setStatus('robotStatus','Connected to '+device.name+'.');
+    setStatus('linkDiagnostics',isRetry?'Reconnected ✓. Play Mode OFF; unlock motion only when safe.':'Connected ✓. Watch the sensors; no automatic movement.');
+    await transmit('Q');
+    if(isRetry) bubble('Pip reconnected. Play Mode remains OFF and wheel movement is locked for safety.','system');
+    else bubble('Pip is connected! Keep wheels raised for the first motion test.','system');
+  } catch(err) {
+    setStatus('linkDiagnostics','Bluetooth error: '+(err && err.message || String(err)));
+    if(device && device.gatt.connected) {
+      try{device.gatt.disconnect()}catch(_){}
+    }
+    resetBluetoothState('Bluetooth connection failed.');
+  } finally {
+    connectBusy=false;
+    if(!rxChar && device && !userRequestedDisconnect && !document.hidden && generation===bleGeneration) scheduleReconnect();
+  }
+}
+async function connectRobot() {
+  if (!navigator.bluetooth) {bubble('Use Chrome or Edge on Windows or Chrome on Android, from HTTPS or localhost. iPhone browsers do not support Web Bluetooth.','system');return}
+  if(connectBusy)return;
+  if(device && device.gatt.connected && rxChar) {setStatus('linkDiagnostics','Already connected to Pip.');return;}
+  try {
+    userRequestedDisconnect=false;cancelRetry();reconnectAttempts=0;bleGeneration++;
+    if(!device) {
+      setStatus('robotStatus','Scanning for Alvik-AI…');
+      device=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'Alvik-AI'}],optionalServices:[SERVICE_UUID]});
+      device.addEventListener('gattserverdisconnected',disconnectHandler);
+    }
+    await openBluetoothLink(false);
+  } catch(err) {
+    setStatus('robotStatus','Could not connect: '+err.message);
+    setStatus('linkDiagnostics','Could not select or connect to Pip: '+err.message);
+  }
+}
+function disconnectRobotManually() {
+  userRequestedDisconnect=true;bleGeneration++;cancelRetry();
+  const old=device;device=null;
+  resetBluetoothState('Disconnected by you.');
+  setStatus('linkDiagnostics','Manually disconnected. Click Connect Alvik to connect again.');
+  if(old && old.gatt.connected) old.gatt.disconnect();
+}
+async function transmit(command) {
+  if (!rxChar || !device || !device.gatt.connected) throw Error('Alvik is not connected');
+  const data=new TextEncoder().encode(command);
+  if(data.length>20) throw Error('BLE command too long');
+  // Queue writes to avoid GATT 'operation in progress' errors.
+  const operation=sendChain.catch(()=>{}).then(()=>rxChar.writeValueWithResponse(data));
+  sendChain=operation;return operation;
+}
+async function sendStop(emergency=false) {
+  safetyEpoch++;petAutoActive=false;updatePetModeState();
+  if ('speechSynthesis' in window){voiceSerial++;speechSynthesis.cancel()}
+  if (!rxChar) {bubble('Connect to Alvik to send a stop command.','system');return}
+  try {await transmit(emergency?'E':'S');if(emergency)estopLatched=true;
+    setStatus('robotStatus',emergency?'Emergency stop requested':'Stop requested');}
+  catch(err){bubble(err.message,'system')}
+}
+async function setPetMode(mode) {
+  if(mode==='rest') {
+    petAutoActive=false;updatePetModeState();
+    if(rxChar) {try {await transmit('P,0');}catch(err){bubble('Rest failed: '+err.message,'system')}}
+    else bubble('Pip is already resting (Bluetooth disconnected).','system');
+    moodUI('shy');return;
+  }
+  if(!rxChar) {bubble('Connect Bluetooth before enabling Play Mode.','system');return}
+  if(!$('allowMotion').checked) {bubble('Unlock wheel movement first, after testing with wheels raised.','system');return}
+  if(estopLatched) {bubble('Emergency stop must be reset manually first.','system');return}
+  try {
+    await transmit('P,1');petAutoActive=true;updatePetModeState();
+    moodUI('excited');petSound('Pip pip! Exploring time!', 'excited');
+  }catch(err){petAutoActive=false;updatePetModeState();bubble('Play Mode failed: '+err.message,'system')}
+}
+// A browser heartbeat is required to keep autonomous motion armed.
+setInterval(()=>{
+  if(!petAutoActive || !rxChar)return;
+  if(document.hidden) {sendStop(false);return;}
+  transmit('P,H').catch(()=>{petAutoActive=false;updatePetModeState()});
+},1450);
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden && petAutoActive){
+    sendStop(false);
+    setStatus('linkDiagnostics','Play Mode paused because you switched tabs. Bluetooth may still be connected.');
+  }
+  if(!document.hidden && device && !rxChar && !userRequestedDisconnect && !connectBusy) scheduleReconnect();
+});
+const directionCodes={forward:'F',backward:'B',left:'L',right:'R'};
+async function runAction(action, requestEpoch) {
+  if (!action || !action.type || action.type==='none') return false;
+  if (action.type==='stop') {await sendStop(!!action.emergency);return true}
+  if (action.type!=='move')return false;
+  if(requestEpoch!==safetyEpoch) {bubble('Movement canceled by STOP/disconnection.','system');return false}
+  if(!$('allowMotion').checked) {bubble('Wheel tricks are locked! Check "Unlock tiny tricks" after the raised-wheel safety test.','system');return false}
+  if(!rxChar) {bubble('Pip needs Bluetooth connected to move.','system');return false}
+  if(estopLatched) {bubble('Emergency stop is active. Reset only after the robot is safe.','system');return false}
+  const code=directionCodes[action.direction];if(!code)return false;
+  const ms=Math.round(Number(action.duration_ms)),rpm=Math.round(Number(action.speed_rpm));
+  if(!(ms>=80&&ms<=800&&rpm>=8&&rpm<=24))return false;
+  // Robot firmware always samples and validates real-time sensors before F.
+  // Browser sensor telemetry can be stale/missing; never use it as the final gate.
+  try {
+    await transmit('M,'+code+','+ms+','+rpm);
+    return true;
+  } catch(err) {bubble('Movement was not sent: '+err.message,'system');return false}
+}
+async function doPetTrick(action, text, requestEpoch) {
+  if(action.type==='affection') {
+    const replies=['Bweee! Tail-wiggle mode!','Pip pip! More head pats!','Brrp! My LEDs are doing happy dances!','Boop-boop! Treat accepted!'];
+    const line=replies[Math.floor(Math.random()*replies.length)];
+    bubble(line,'bot');moodUI('happy');say(line,'happy');
+    return;
+  }
+  if(action.type==='pet_mode') {
+    await setPetMode(action.mode);
+    bubble(action.mode==='play'?'Pip-pip! Time for adventures!':'Yaaawn... curling up for a nap.','bot');
+    return;
+  }
+  const direction=action.direction;
+  if(action.type==='stop') {
+    await sendStop(action.emergency);
+    moodUI(action.emergency?'warning':'shy');
+    bubble(action.emergency?'Pip! Emergency paws-down!':'Boop. Paws parked.','bot');
+    return;
+  }
+  const sent=await runAction(action,requestEpoch);
+  if(sent){
+    moodUI('excited');
+    const talk={forward:'Pip! Tiny step ahead!',backward:'Brrp! Scooting back!',left:'Wheee! Left wiggle!',right:'Wheee! Right wiggle!'};
+    const reply=talk[direction]||'Pip!';
+    bubble(reply,'bot');say(reply,'excited');
+    // An accepted BLE write is NOT proof that the robot moved; watch A,moving/A,blocked.
+  } else {
+    moodUI('curious');
+    const reply='Pip? My wheels are locked or I need Bluetooth. Check the robot status!';
+    bubble(reply,'bot');say(reply,'curious');
+  }
+}
+
+function callAppsScript(payload) {
+  const url=$('backend').value.trim();
+  if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec(?:\?.*)?$/.test(url)) {
+    return Promise.reject(Error('Enter your deployed Apps Script /exec URL.'));
+  }
+  const pin=$('pin').value;
+  if(pin.length<16) return Promise.reject(Error('Enter your private APP_PIN (16+ characters).'));
+  if(!['http:','https:'].includes(location.protocol)) return Promise.reject(Error('Run this web page from localhost or an HTTPS website, not as a file.'));
+  const id=(crypto.randomUUID ? crypto.randomUUID():String(Date.now())+Math.random());
+  const frame=document.createElement('iframe');frame.name='frame_'+id.replace(/[^\w]/g,'');
+  frame.style.cssText='position:absolute;width:0;height:0;border:0;opacity:0;pointer-events:none';
+  const form=document.createElement('form');form.method='POST';form.action=url;form.target=frame.name;form.style.display='none';
+  const values={requestId:id,origin:location.origin,pin:pin,payload:JSON.stringify(payload)};
+  for(const [name,value] of Object.entries(values)) {
+    const input=document.createElement('input');input.name=name;input.value=value;input.type='hidden';form.appendChild(input);
+  }
+  document.body.append(frame,form);
+  return new Promise((resolve,reject)=>{
+    const cleanup=()=>{clearTimeout(timeout);pending.delete(id);form.remove();frame.remove()};
+    const timeout=setTimeout(()=>{cleanup();reject(Error('AI request timed out. Check deployment URL, access and APP_ORIGINS.'))},AI_TIMEOUT_MS);
+    pending.set(id,result=>{cleanup();result.error?reject(Error(result.error)):resolve(result)});
+    form.submit();
+  });
+}
+window.addEventListener('message',event=>{
+  const googleOrigin=event.origin==='https://script.google.com'||/^https:\/\/([\w-]+\.)*googleusercontent\.com$/.test(event.origin);
+  if(!googleOrigin || !event.data || event.data.app!=='alvik-ai') return;
+  const cb=pending.get(event.data.requestId);if(cb)cb(event.data.result||{error:'Empty response'});
+});
+async function chat(text, testOnly=false) {
+  text=String(text||'').trim();if(!text || busy)return;
+  const requestEpoch=safetyEpoch;
+  const command=(!testOnly && window.PetCommands.parsePetCommand(text));
+  if(!testOnly){bubble(text,'user');$('prompt').value=''}
+  if(command){
+    busy=true;$('send').disabled=true;
+    try{await doPetTrick(command,text,requestEpoch)}
+    finally{busy=false;$('send').disabled=false}
+    return; // Commands are local: even Gemini 503 cannot block the wheels.
+  }
+  busy=true;$('send').disabled=true;$('testAI').disabled=true;
+  try {
+    setStatus('aiStatus','Pip is thinking…');
+    const answer=await callAppsScript({message:text,history:history.slice(-16),telemetry:telemetry(),connected:!!rxChar});
+    setStatus('aiStatus','Gemini connected ✓');
+    if (!testOnly) {
+      bubble(answer.reply,'bot');
+      history.push({role:'user',text:text},{role:'model',text:answer.reply});
+      history=history.slice(-20);
+      moodUI(answer.mood||'curious');
+      say(answer.reply,answer.mood||'curious');
+      // Gemini never directly commands motors in Pet 2.0.
+    } else bubble('Pip says: '+answer.reply,'system');
+  } catch(err) {
+    setStatus('aiStatus','Gemini error: '+err.message);
+    bubble('Brrp! My cloud brain is sleepy right now. My tiny tricks still work!','bot');
+    bubble('AI diagnostic: '+err.message,'system');
+  } finally {busy=false;$('send').disabled=false;$('testAI').disabled=false}
+}
+$('send').onclick=()=>chat($('prompt').value);
+$('testAI').onclick=()=>chat('Say a very short hello. Do not move.',true);
+$('prompt').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();chat($('prompt').value)}});
+document.querySelectorAll('[data-ask]').forEach(b=>b.onclick=()=>chat(b.dataset.ask));
+$('connect').onclick=connectRobot;
+$('disconnect').onclick=disconnectRobotManually;
+$('refresh').onclick=async()=>{try{await transmit('Q')}catch(err){bubble(err.message,'system')}};
+$('stop').onclick=()=>sendStop();
+$('estop').onclick=()=>sendStop(true);
+$('startPlay').onclick=()=>setPetMode('play');
+$('restPet').onclick=()=>setPetMode('rest');
+$('forwardTest').onclick=()=>chat('go forward');
+$('leftTest').onclick=()=>chat('turn left');
+$('reset').onclick=async()=>{if(!confirm('Is the robot in a clear, safe area? Reset the emergency stop?'))return;try{await transmit('R');estopLatched=false}catch(err){bubble(err.message,'system')}};
+$('mic').onclick=()=>{
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SpeechRecognition){bubble('Speech recognition is not supported here. Use Chrome on desktop or type a message.','system');return}
+  if(micRecognition){micRecognition.stop();return}
+  voiceSerial++;if('speechSynthesis' in window)speechSynthesis.cancel();
+  const recognition=new SpeechRecognition();micRecognition=recognition;
+  recognition.lang='en-US';recognition.interimResults=false;recognition.maxAlternatives=1;
+  recognition.onresult=e=>{const text=e.results[0][0].transcript;$('prompt').value=text;chat(text)};
+  recognition.onerror=e=>bubble('Microphone: '+e.error,'system');
+  recognition.onend=()=>{micRecognition=null;$('mic').classList.remove('mic-on')};
+  $('mic').classList.add('mic-on');
+  try{recognition.start()}catch(e){recognition.onend();bubble(e.message,'system')}
+};
+window.addEventListener('beforeunload',()=>{userRequestedDisconnect=true;cancelRetry();if(device&&device.gatt.connected){try{device.gatt.disconnect()}catch(e){}}});
+bubble('Pip pip! I’m your tiny robot pet! Wanna chat, wiggle, or sniff with my distance sensors?');
+updateMotionState();updatePetModeState();
+refreshSensors();
+</script>
+</body>
+</html>
